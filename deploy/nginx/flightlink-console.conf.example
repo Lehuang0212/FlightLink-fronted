@@ -1,0 +1,38 @@
+# Replace the domain, certificate paths, and sample administrator address before use.
+# Keep the final allow/deny rules: they restrict the entire console, including /api/.
+server {
+    listen 18443 ssl;
+    server_name console.example.com;
+
+    # Replace with the paths to a valid certificate and private key for server_name.
+    ssl_certificate     /etc/letsencrypt/live/console.example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/console.example.com/privkey.pem;
+
+    # Replace this documentation-only address with the administrator's public IPv4 /32.
+    allow 203.0.113.10/32;
+    deny all;
+
+    root /var/www/flightlink-console;
+    index index.html;
+    server_tokens off;
+
+    # The frontend uses relative /api/v1 URLs. No URI suffix on proxy_pass preserves /api/.
+    location /api/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 60s;
+    }
+
+    location = /index.html {
+        add_header Cache-Control "no-cache";
+    }
+
+    # Vue Router history fallback: direct visits to protected routes load the SPA.
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
