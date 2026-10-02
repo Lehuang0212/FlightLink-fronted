@@ -63,6 +63,22 @@ async function mountDetail(channel: ChannelPublic, otherChannel?: ChannelPublic)
 }
 
 describe('port-group detail', () => {
+  it('polls telemetry, messages and packets every second, and Router logs every two seconds', async () => {
+    vi.useFakeTimers()
+    const { wrapper } = await mountDetail(makeChannel())
+    expect(getChannel).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(999)
+    expect(getChannel).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(getChannel).toHaveBeenCalledTimes(2)
+    expect(getFlightMessages).toHaveBeenCalledTimes(2)
+    expect(getPacketSummaries).toHaveBeenCalledTimes(2)
+    expect(getChannelLogs).toHaveBeenCalledTimes(1)
+    await vi.advanceTimersByTimeAsync(1_000)
+    expect(getChannelLogs).toHaveBeenCalledTimes(2)
+    expect(getChannelLogs).toHaveBeenLastCalledWith(previewChannelId, 500)
+    wrapper.unmount()
+  })
   beforeEach(() => {
     vi.clearAllMocks()
   })

@@ -18,7 +18,7 @@ interface ChannelSnapshot {
   ports: string
 }
 
-const polling = usePolling(listChannels, 3_000)
+const polling = usePolling(listChannels, 1_000)
 const channels = computed(() => polling.data.value ?? [])
 const hasLoaded = computed(() => polling.data.value !== undefined)
 const onlineUavCount = computed(
@@ -168,7 +168,7 @@ async function refresh(): Promise<void> {
           />
         </div>
         <div
-          v-else-if="polling.loading.value || !hasLoaded"
+          v-else-if="polling.initialLoading.value || !hasLoaded"
           class="empty-state"
         >
           <span

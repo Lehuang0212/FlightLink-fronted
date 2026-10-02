@@ -9,16 +9,17 @@ import ChannelRuntime from '@/components/ChannelRuntime.vue'
 import LinkQuality from '@/components/LinkQuality.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
 import TerminalPanel from '@/components/TerminalPanel.vue'
+import RouterLogPanel from '@/components/RouterLogPanel.vue'
 import { usePolling } from '@/composables/usePolling'
 
 const route = useRoute()
 const router = useRouter()
 const channelId = computed(() => String(route.params.id ?? ''))
 const enabled = computed(() => channelId.value.length > 0)
-const channelPolling = usePolling(() => getChannel(channelId.value), 2_000, enabled, channelId)
-const logsPolling = usePolling(() => getChannelLogs(channelId.value, 100), 2_000, enabled, channelId)
-const messagesPolling = usePolling(() => getFlightMessages(channelId.value, 100), 2_000, enabled, channelId)
-const packetsPolling = usePolling(() => getPacketSummaries(channelId.value, 100), 2_000, enabled, channelId)
+const channelPolling = usePolling(() => getChannel(channelId.value), 1_000, enabled, channelId)
+const logsPolling = usePolling(() => getChannelLogs(channelId.value, 500), 2_000, enabled, channelId)
+const messagesPolling = usePolling(() => getFlightMessages(channelId.value, 100), 1_000, enabled, channelId)
+const packetsPolling = usePolling(() => getPacketSummaries(channelId.value, 100), 1_000, enabled, channelId)
 
 const channel = computed(() => channelPolling.data.value)
 const logLines = computed(() => logsPolling.data.value ?? [])
@@ -438,10 +439,9 @@ watch(channelId, (nextId, previousId) => {
       <ChannelRuntime :channel="channel" />
 
       <div class="terminal-grid">
-        <TerminalPanel
-          title="mavlink-router 运行日志"
+        <RouterLogPanel
           :lines="logLines"
-          :loading="logsPolling.loading.value"
+          :loading="logsPolling.initialLoading.value"
           :error="logsPolling.error.value ? toChineseError(logsPolling.error.value, '暂时无法读取 Router 日志。') : null"
           :auto-scroll="logsAutoScroll"
           @update:auto-scroll="logsAutoScroll = $event"
@@ -449,7 +449,7 @@ watch(channelId, (nextId, previousId) => {
         <TerminalPanel
           title="飞控消息 · STATUSTEXT"
           :lines="messageLines"
-          :loading="messagesPolling.loading.value"
+          :loading="messagesPolling.initialLoading.value"
           :error="messagesPolling.error.value ? toChineseError(messagesPolling.error.value, '暂时无法读取飞控消息。') : null"
           :auto-scroll="messagesAutoScroll"
           @update:auto-scroll="messagesAutoScroll = $event"
@@ -458,7 +458,7 @@ watch(channelId, (nextId, previousId) => {
       <TerminalPanel
         title="实时 MAVLink 报文摘要"
         :lines="packetLines"
-        :loading="packetsPolling.loading.value"
+        :loading="packetsPolling.initialLoading.value"
         :error="packetsPolling.error.value ? toChineseError(packetsPolling.error.value, '暂时无法读取报文摘要。') : null"
         :auto-scroll="packetsAutoScroll"
         @update:auto-scroll="packetsAutoScroll = $event"

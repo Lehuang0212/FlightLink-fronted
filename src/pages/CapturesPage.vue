@@ -195,7 +195,7 @@ async function downloadFile(capture: CaptureFilePublic): Promise<void> {
       <TerminalPanel
         title="实时 MAVLink 报文摘要"
         :lines="packetLines"
-        :loading="packetPolling.loading.value"
+        :loading="packetPolling.initialLoading.value"
         :error="packetError"
         :auto-scroll="autoScroll"
         @update:auto-scroll="autoScroll = $event"
@@ -239,7 +239,7 @@ async function downloadFile(capture: CaptureFilePublic): Promise<void> {
 
         <CaptureFileList
           :captures="captures"
-          :loading="capturePolling.loading.value"
+          :loading="capturePolling.initialLoading.value"
           :error="capturesError"
           :downloading-file-name="downloadingFileName"
           @download="downloadFile"
@@ -248,7 +248,7 @@ async function downloadFile(capture: CaptureFilePublic): Promise<void> {
     </template>
 
     <div
-      v-else-if="!channelError && (channelPolling.loading.value || channelPolling.data.value === undefined)"
+      v-else-if="!channelError && (channelPolling.initialLoading.value || channelPolling.data.value === undefined)"
       class="captures-empty"
       role="status"
     >

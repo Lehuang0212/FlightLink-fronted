@@ -7,6 +7,7 @@ import {
   watch,
   type MaybeRefOrGetter,
 } from 'vue'
+import { shareUnchanged } from './shareUnchanged'
 
 export function usePolling<T>(
   loader: () => Promise<T>,
@@ -17,6 +18,8 @@ export function usePolling<T>(
   const data = shallowRef<T>()
   const error = shallowRef<unknown>(null)
   const loading = shallowRef(false)
+  const fetching = shallowRef(false)
+  const initialLoading = computed(() => loading.value && data.value === undefined)
   const enabledValue = computed(() => toValue(enabled))
   const keyValue = computed(() => (key === undefined ? undefined : toValue(key)))
   let timer: ReturnType<typeof setInterval> | undefined
@@ -39,7 +42,7 @@ export function usePolling<T>(
   function startTimer(): void {
     clearTimer()
     if (mounted && enabledValue.value && isVisible()) {
-      timer = setInterval(() => void refresh(), intervalMs)
+      timer = setInterval(() => void runRefresh(false), intervalMs)
     }
   }
 
@@ -50,22 +53,23 @@ export function usePolling<T>(
     }
     if (!enabledValue.value) return
     startTimer()
-    void refresh()
+    void runRefresh(false)
   }
 
-  async function refresh(): Promise<void> {
+  async function runRefresh(manual: boolean, queue = manual): Promise<void> {
     if (inFlight) {
-      refreshQueued = true
+      if (queue) refreshQueued = true
       return inFlight
     }
 
-    loading.value = true
+    loading.value = manual || data.value === undefined
+    fetching.value = true
     const generation = requestGeneration
     const request = Promise.resolve()
       .then(loader)
       .then((result) => {
         if (!mounted || generation !== requestGeneration) return
-        data.value = result
+        data.value = shareUnchanged(data.value, result)
         error.value = null
       })
       .catch((reason: unknown) => {
@@ -74,16 +78,21 @@ export function usePolling<T>(
       .finally(() => {
         if (!mounted) return
         loading.value = false
+        fetching.value = false
         inFlight = null
         if (refreshQueued && enabledValue.value && isVisible()) {
           refreshQueued = false
-          void refresh()
+          return runRefresh(true)
         } else {
           refreshQueued = false
         }
       })
     inFlight = request
     return request
+  }
+
+  function refresh(): Promise<void> {
+    return runRefresh(true)
   }
 
   watch([enabledValue, keyValue], ([isEnabled, currentKey], [wasEnabled, previousKey]) => {
@@ -100,7 +109,7 @@ export function usePolling<T>(
       return
     }
     startTimer()
-    if (isVisible()) void refresh()
+    if (isVisible()) void runRefresh(false, true)
   })
 
   onMounted(() => {
@@ -108,7 +117,7 @@ export function usePolling<T>(
     document.addEventListener('visibilitychange', onVisibilityChange)
     if (enabledValue.value && isVisible()) {
       startTimer()
-      void refresh()
+      void runRefresh(false)
     }
   })
 
@@ -119,5 +128,5 @@ export function usePolling<T>(
     document.removeEventListener('visibilitychange', onVisibilityChange)
   })
 
-  return { data, error, loading, refresh }
+  return { data, error, loading, initialLoading, fetching, refresh }
 }

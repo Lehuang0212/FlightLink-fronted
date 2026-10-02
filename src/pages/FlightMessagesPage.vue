@@ -12,7 +12,7 @@ const hasChannels = computed(() => channels.value.length > 0)
 const messagesEnabled = computed(() => selectedChannelId.value.length > 0)
 const messagesPolling = usePolling(
   () => getFlightMessages(selectedChannelId.value, 100),
-  2_000,
+  1_000,
   messagesEnabled,
   selectedChannelId,
 )
@@ -165,7 +165,7 @@ async function refresh(): Promise<void> {
           </select>
         </label>
         <p class="messages-count">
-          显示 {{ filteredMessages.length }} / {{ messages.length }} 条 · 每 2 秒更新
+          显示 {{ filteredMessages.length }} / {{ messages.length }} 条 · 每 1 秒更新
         </p>
       </section>
 
@@ -173,7 +173,7 @@ async function refresh(): Promise<void> {
         title="飞控消息 · STATUSTEXT"
         :lines="messageLines"
         :line-tones="messageTones"
-        :loading="messagesPolling.loading.value"
+        :loading="messagesPolling.initialLoading.value"
         :error="messageError"
         :auto-scroll="autoScroll"
         @update:auto-scroll="autoScroll = $event"
@@ -181,7 +181,7 @@ async function refresh(): Promise<void> {
     </template>
 
     <div
-      v-else-if="!channelError && (channelPolling.loading.value || channelPolling.data.value === undefined)"
+      v-else-if="!channelError && (channelPolling.initialLoading.value || channelPolling.data.value === undefined)"
       class="messages-empty"
       role="status"
     >

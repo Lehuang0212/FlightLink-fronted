@@ -7,7 +7,7 @@ import ChannelCard from '@/components/ChannelCard.vue'
 import ChannelFormDialog from '@/components/ChannelFormDialog.vue'
 import { usePolling } from '@/composables/usePolling'
 
-const polling = usePolling(listChannels, 3_000)
+const polling = usePolling(listChannels, 1_000)
 const channels = computed(() => polling.data.value ?? [])
 const hasLoaded = computed(() => polling.data.value !== undefined)
 const atLimit = computed(() => channels.value.length >= 5)
@@ -98,7 +98,7 @@ async function createPortGroup(input: ChannelWrite): Promise<void> {
         组
       </span>
       <span class="channels-toolbar__refresh">
-        页面显示时每 3 秒更新一次
+        页面显示时每 1 秒更新一次
       </span>
     </div>
 
@@ -142,7 +142,7 @@ async function createPortGroup(input: ChannelWrite): Promise<void> {
       />
     </div>
     <div
-      v-else-if="polling.loading.value || !hasLoaded"
+      v-else-if="polling.initialLoading.value || !hasLoaded"
       class="empty-state"
     >
       <span

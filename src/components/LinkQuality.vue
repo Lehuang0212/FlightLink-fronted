@@ -16,7 +16,7 @@ const quality = computed(() => {
   }
   const value = Math.max(0, Math.min(100, props.value))
   return {
-    value,
+    value: Math.round(value),
     level: Math.ceil((value / 100) * bars.length),
     tone: value >= 80 ? 'good' : value >= 50 ? 'medium' : 'poor',
   }

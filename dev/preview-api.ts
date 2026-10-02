@@ -204,9 +204,30 @@ function hasListenerConflict(
 
 function sampleLogs(): string[] {
   return [
-    'Sep 30 12:00:00 mavlink-router[4812]: Router started',
-    'Sep 30 12:00:01 mavlink-router[4812]: UDP endpoint 0.0.0.0:5760 listening',
-    'Sep 30 12:00:02 mavlink-router[4812]: TCP server listening on 0.0.0.0:14552',
+    '本地预览：以下为模拟 Router 输出，不代表真实连接或统计。',
+    'Router started',
+    'UDP Endpoint [4]uav_uplink {',
+    '\tReceived messages {',
+    '\t\tCRC error: 0 0% 0KB',
+    '\t\tSequence lost: 2 0%',
+    '\t\tHandled: 843 15KB',
+    '\t\tTotal: 845',
+    '\t}',
+    '\tTransmitted messages {',
+    '\t\tTotal: 389 7KB',
+    '\t}',
+    '}',
+    'UDP Endpoint [5]telemetry_monitor {',
+    '\tReceived messages {',
+    '\t\tCRC error: 0 0% 0KB',
+    '\t\tSequence lost: 0 0%',
+    '\t\tHandled: 0 0KB',
+    '\t\tTotal: 0',
+    '\t}',
+    '\tTransmitted messages {',
+    '\t\tTotal: 843 15KB',
+    '\t}',
+    '}',
   ]
 }
 

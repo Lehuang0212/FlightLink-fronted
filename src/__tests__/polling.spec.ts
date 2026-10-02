@@ -6,6 +6,31 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { usePolling } from '@/composables/usePolling'
 
 describe('usePolling', () => {
+  it('keeps background polling quiet and preserves unchanged nested references', async () => {
+    const loader = vi.fn().mockResolvedValue({ rows: [{ id: 'a', value: 1 }, { id: 'b', value: 2 }] })
+    let polling!: ReturnType<typeof usePolling<{ rows: { id: string; value: number }[] }>>
+    const wrapper = mount(defineComponent({ setup() {
+      polling = usePolling(loader, 1_000)
+      return () => h('div')
+    } }))
+    await flushPromises()
+    const original = polling.data.value!
+    let finish!: (value: typeof original) => void
+    loader.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+    await vi.advanceTimersByTimeAsync(1_000)
+    expect(polling.loading.value).toBe(false)
+    await vi.advanceTimersByTimeAsync(3_000)
+    expect(loader).toHaveBeenCalledTimes(2)
+    finish({ rows: [{ id: 'a', value: 1 }, { id: 'b', value: 2 }] })
+    await flushPromises()
+    expect(loader).toHaveBeenCalledTimes(2)
+    expect(polling.data.value).toBe(original)
+    loader.mockResolvedValueOnce({ rows: [{ id: 'b', value: 3 }, { id: 'a', value: 1 }] })
+    await polling.refresh()
+    expect(polling.data.value!.rows[1]).toBe(original.rows[0])
+    expect(polling.data.value!.rows[0]!.value).toBe(3)
+    wrapper.unmount()
+  })
   beforeEach(() => {
     vi.useFakeTimers()
     Object.defineProperty(document, 'visibilityState', {

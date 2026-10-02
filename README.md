@@ -15,6 +15,16 @@ npm run dev
 
 开发服务器默认将 `/api/` 转发至 `http://127.0.0.1:8000`。如需在没有后端时查看演示界面，可在未纳入 Git 的 `.env.local` 中开启仅开发使用的本地预览模式，并设置本机演示账号。预览模式使用模拟数据，不会调用 FastAPI 或阿里云；演示账号不得用于生产环境。
 
+### 数据刷新与 Router 终端
+
+总览、端口组状态、飞控消息和实时报文摘要每 1 秒更新；Router 日志每 2 秒读取最近 500 条 journal 记录，抓包文件和端口选择列表每 15 秒更新。自动更新不切换加载提示或刷新按钮，相同的数据分支保留原对象；页面隐藏时暂停轮询，慢请求不会积压自动补刷。
+
+Router 终端保留原始 `Endpoint { Received messages { ... } Transmitted messages { ... } }` 文本和缩进，显示每个端点在最近日志窗口中的最新完整区块，不转换为 JSON，不自行计算或补造 Router 计数。截断区块不覆盖完整区块；数字变化不触发自动滚动，新的运行事件才按自动滚动开关处理。统计对应原生端点名称，例如 `uav_uplink`；只有 Router 实际输出的端点才显示，未启用的 BinLog/TLog 不会被模拟成真实端点。
+
+需同时更新后端及其安装在 ECS 上的 `flightlink-routerctl`，才能获得无 journal 前缀的原始文本和当前服务运行批次的日志。开发预览中的统计已标为模拟数据。
+
+MAVLink 链路质量百分比统一四舍五入显示整数（例如 `98.76% → 99%`），包括无障碍文字；信号阶梯和后端计算仍使用原始精度。
+
 ### 检查与构建
 
 ```bash
@@ -41,6 +51,16 @@ npm run dev
 ```
 
 By default, the development server proxies `/api/` to `http://127.0.0.1:8000`. To view the interface without a backend, enable the development-only local preview mode in an untracked `.env.local` file and set a local demo account. Preview mode uses simulated data and does not call FastAPI or Alibaba Cloud. Do not use demo credentials in production.
+
+### Refresh and Router terminal
+
+Overview, channel telemetry, flight messages and live packet summaries refresh every second. Router logs poll the latest 500 journal entries every two seconds; capture files and channel selectors refresh every 15 seconds. Background polls keep loading prompts and refresh buttons stable, reuse unchanged data branches, pause when the page is hidden, and skip ticks while a request is pending.
+
+The Router terminal preserves native endpoint blocks, braces and indentation, showing the latest complete block per endpoint within the recent log window. It does not convert statistics to JSON or calculate substitute Router counters. Truncated blocks do not replace complete blocks within that window. Counter changes do not cause automatic scrolling; new runtime events follow the auto-scroll setting. Names such as `uav_uplink` come from Router output; BinLog/TLog endpoints appear only when actually emitted. Local preview statistics are explicitly simulated.
+
+Update both the backend and its installed ECS `flightlink-routerctl` helper to obtain unprefixed text from the current service invocation.
+
+MAVLink link quality is rounded to an integer for visible and accessible percentage text (for example, `98.76% → 99%`). Signal-bar thresholds and backend calculations retain their original precision.
 
 ### Checks and build
 

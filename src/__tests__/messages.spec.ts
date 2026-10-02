@@ -76,12 +76,12 @@ describe('flight messages page', () => {
     wrapper.unmount()
   })
 
-  it('polls every two seconds and supports manual refresh', async () => {
+  it('polls every second and supports manual refresh', async () => {
     const wrapper = mount(FlightMessagesPage)
     await flushPromises()
     expect(getFlightMessages).toHaveBeenCalledTimes(1)
 
-    await vi.advanceTimersByTimeAsync(1_999)
+    await vi.advanceTimersByTimeAsync(999)
     expect(getFlightMessages).toHaveBeenCalledTimes(1)
     await vi.advanceTimersByTimeAsync(1)
     await flushPromises()

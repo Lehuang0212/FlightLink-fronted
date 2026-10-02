@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 
 type TerminalLineTone = 'critical' | 'warning' | 'info' | 'muted' | 'default'
 
@@ -10,9 +10,10 @@ const props = withDefaults(
     loading?: boolean
     error?: string | null
     autoScroll?: boolean
+    scrollOnFirstLoad?: boolean
     lineTones?: readonly TerminalLineTone[]
   }>(),
-  { loading: false, error: null, autoScroll: true, lineTones: () => [] },
+  { loading: false, error: null, autoScroll: true, scrollOnFirstLoad: true, lineTones: () => [] },
 )
 
 const emit = defineEmits<{
@@ -20,11 +21,20 @@ const emit = defineEmits<{
 }>()
 
 const output = ref<HTMLDivElement | null>(null)
+const rows = computed(() => {
+  const occurrences = new Map<string, number>()
+  return props.lines.map((text, index) => {
+    const occurrence = occurrences.get(text) ?? 0
+    occurrences.set(text, occurrence + 1)
+    return { text, key: `${text}:${occurrence}`, tone: props.lineTones[index] ?? 'default' }
+  })
+})
 
 watch(
   () => `${props.lines.join('\n')}\u0000${props.lineTones?.join(',') ?? ''}`,
-  async () => {
+  async (_, previous) => {
     if (!props.autoScroll) return
+    if (!props.scrollOnFirstLoad && previous.split('\u0000')[0] === '') return
     await nextTick()
     if (output.value) output.value.scrollTop = output.value.scrollHeight
   },
@@ -65,32 +75,34 @@ watch(
       >
         {{ error }}
       </p>
-      <p
-        v-if="loading && lines.length === 0"
-        class="terminal-panel__empty"
-      >
-        正在读取数据…
-      </p>
-      <pre
-        v-else-if="lines.length"
-        class="terminal-panel__lines"
-      ><span
-        v-for="(line, index) in lines"
-        :key="index"
+      <slot>
+        <p
+          v-if="loading && lines.length === 0"
+          class="terminal-panel__empty"
+        >
+          正在读取数据…
+        </p>
+        <pre
+          v-else-if="lines.length"
+          class="terminal-panel__lines"
+        ><span
+        v-for="row in rows"
+        :key="row.key"
         class="terminal-panel__line"
-        :class="`terminal-panel__line--${lineTones?.[index] ?? 'default'}`"
-      >{{ line }}</span></pre>
-      <p
-        v-else-if="!error"
-        class="terminal-panel__empty"
-      >
-        暂无数据
-      </p>
+        :class="`terminal-panel__line--${row.tone}`"
+        >{{ row.text }}</span></pre>
+        <p
+          v-else-if="!error"
+          class="terminal-panel__empty"
+        >
+          暂无数据
+        </p>
+      </slot>
     </div>
   </section>
 </template>
 
-<style scoped>
+<style>
 .terminal-panel {
   min-width: 0;
   overflow: hidden;
@@ -168,7 +180,10 @@ watch(
   line-height: 1.65;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+  tab-size: 4;
 }
+
+.terminal-panel__line--section { color: #8dc8ed; }
 
 .terminal-panel__line {
   display: block;
