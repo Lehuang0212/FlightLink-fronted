@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import type { ChannelPublic } from '@/api/types'
 import LinkQuality from '@/components/LinkQuality.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
+import { formatDecimal } from '@/format'
 
 const props = defineProps<{ channel: ChannelPublic }>()
 
@@ -19,7 +20,7 @@ function armedText(value: boolean | null): string {
 
 function lastPacketText(age: number | null): string {
   if (age === null) return '尚未收到飞控数据'
-  return `最近收到数据：${age.toFixed(age < 1 ? 2 : 1)} 秒前`
+  return `最近收到数据：${formatDecimal(age)} 秒前`
 }
 </script>
 
@@ -83,11 +84,11 @@ function lastPacketText(age: number | null): string {
       </div>
       <div class="telemetry-item">
         <span>海拔</span>
-        <strong>{{ display(telemetry.altitude_m, ' m') }}</strong>
+        <strong>{{ telemetry.altitude_m === null ? '—' : `${formatDecimal(telemetry.altitude_m)} m` }}</strong>
       </div>
       <div class="telemetry-item">
         <span>地速</span>
-        <strong>{{ display(telemetry.ground_speed_m_s, ' m/s') }}</strong>
+        <strong>{{ telemetry.ground_speed_m_s === null ? '—' : `${formatDecimal(telemetry.ground_speed_m_s)} m/s` }}</strong>
       </div>
     </div>
 

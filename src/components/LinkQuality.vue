@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { formatDecimal } from '@/format'
 
 const props = withDefaults(
   defineProps<{
@@ -16,7 +17,7 @@ const quality = computed(() => {
   }
   const value = Math.max(0, Math.min(100, props.value))
   return {
-    value: Math.round(value),
+    value: formatDecimal(value),
     level: Math.ceil((value / 100) * bars.length),
     tone: value >= 80 ? 'good' : value >= 50 ? 'medium' : 'poor',
   }

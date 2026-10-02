@@ -3,8 +3,8 @@ import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
 import LinkQuality from '@/components/LinkQuality.vue'
 
-describe('integer link quality display', () => {
-  it.each([[98.7654321, '99%'], [78.1234567, '78%'], [0, '0%'], [100.1, '100%'], [-1, '0%']])(
+describe('two-decimal link quality display', () => {
+  it.each([[98.7654321, '98.77%'], [78.1234567, '78.12%'], [0, '0.00%'], [100.1, '100.00%'], [-1, '0.00%']])(
     'formats %s as %s consistently for text and accessibility', (value, expected) => {
       const wrapper = mount(LinkQuality, { props: { value } })
       expect(wrapper.get('.link-quality__value').text()).toBe(expected)

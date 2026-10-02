@@ -23,7 +23,7 @@ Router 终端保留原始 `Endpoint { Received messages { ... } Transmitted mess
 
 需同时更新后端及其安装在 ECS 上的 `flightlink-routerctl`，才能获得无 journal 前缀的原始文本和当前服务运行批次的日志。开发预览中的统计已标为模拟数据。
 
-MAVLink 链路质量百分比统一四舍五入显示整数（例如 `98.76% → 99%`），包括无障碍文字；信号阶梯和后端计算仍使用原始精度。
+MAVLink 链路质量、海拔、相对高度、地速、电压、数据速率和数据时龄统一保留两位小数（例如 `98.765% → 98.77%`、`11.2 m/s → 11.20 m/s`），包括链路质量无障碍文字。信号阶梯和后端计算仍使用原始精度；端口、卫星数和报文计数保持整数，未知数据保持原有占位。
 
 ### 检查与构建
 
@@ -60,7 +60,7 @@ The Router terminal preserves native endpoint blocks, braces and indentation, sh
 
 Update both the backend and its installed ECS `flightlink-routerctl` helper to obtain unprefixed text from the current service invocation.
 
-MAVLink link quality is rounded to an integer for visible and accessible percentage text (for example, `98.76% → 99%`). Signal-bar thresholds and backend calculations retain their original precision.
+MAVLink link quality, altitude, relative altitude, ground speed, voltage, data rates, and packet age display two decimal places (for example, `98.765% → 98.77%` and `11.2 m/s → 11.20 m/s`), including accessible link-quality text. Signal-bar thresholds and backend calculations retain their original precision. Ports, satellite counts, and message counts remain integers; unavailable data keeps its existing placeholder.
 
 ### Checks and build
 

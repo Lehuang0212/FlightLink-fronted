@@ -15,8 +15,8 @@ defineEmits<{
 function formatSize(bytes: number): string {
   if (!Number.isFinite(bytes) || bytes < 0) return '未知大小'
   if (bytes < 1_024) return `${bytes} B`
-  if (bytes < 1_048_576) return `${(bytes / 1_024).toFixed(1)} KiB`
-  return `${(bytes / 1_048_576).toFixed(1)} MiB`
+  if (bytes < 1_048_576) return `${(bytes / 1_024).toFixed(2)} KiB`
+  return `${(bytes / 1_048_576).toFixed(2)} MiB`
 }
 
 function formatStartedAt(value: string | null): string {

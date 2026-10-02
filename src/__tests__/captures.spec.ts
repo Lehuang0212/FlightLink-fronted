@@ -72,7 +72,7 @@ describe('capture page', () => {
     expect(wrapper.text()).toContain('HEARTBEAT sysid=1 compid=1')
     expect(wrapper.text()).toContain('每 10 分钟轮转')
     expect(wrapper.text()).toContain('写入中')
-    expect(wrapper.text()).toContain('1.5 MiB')
+    expect(wrapper.text()).toContain('1.50 MiB')
     const currentDownload = wrapper.get(`button[aria-label="下载 ${currentFile.file_name}"]`)
     expect(currentDownload.attributes('disabled')).toBeDefined()
     await currentDownload.trigger('click')

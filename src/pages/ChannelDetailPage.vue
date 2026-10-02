@@ -11,6 +11,7 @@ import StatusBadge from '@/components/StatusBadge.vue'
 import TerminalPanel from '@/components/TerminalPanel.vue'
 import RouterLogPanel from '@/components/RouterLogPanel.vue'
 import { usePolling } from '@/composables/usePolling'
+import { formatDecimal as formatNumber } from '@/format'
 
 const route = useRoute()
 const router = useRouter()
@@ -63,12 +64,6 @@ const logsAutoScroll = ref(true)
 const messagesAutoScroll = ref(true)
 const packetsAutoScroll = ref(true)
 
-function formatNumber(value: number | null, decimals = 1): string {
-  if (value === null || !Number.isFinite(value)) return '—'
-  if (Number.isInteger(value)) return String(value)
-  return String(Number(value.toFixed(decimals)))
-}
-
 function formatClock(value: string): string {
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? '未知时间' : date.toLocaleTimeString()
@@ -76,12 +71,12 @@ function formatClock(value: string): string {
 
 function formatAge(seconds: number | null): string {
   if (seconds === null) return '—'
-  return `${formatNumber(seconds, 2)} 秒前`
+  return `${formatNumber(seconds)} 秒前`
 }
 
 function formatRate(bytesPerSecond: number): string {
   if (!Number.isFinite(bytesPerSecond) || bytesPerSecond < 0) return '—'
-  if (bytesPerSecond < 1_024) return `${Math.round(bytesPerSecond)} B/s`
+  if (bytesPerSecond < 1_024) return `${formatNumber(bytesPerSecond)} B/s`
   return `${formatNumber(bytesPerSecond / 1_024)} KB/s`
 }
 

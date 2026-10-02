@@ -83,7 +83,7 @@ describe('overview and port-group cards', () => {
     expect(wrapper.text()).toContain('1 / 2')
     expect(wrapper.text()).toContain('5760')
     expect(wrapper.text()).toContain('14552')
-    expect(wrapper.text()).toContain('93%')
+    expect(wrapper.text()).toContain('93.00%')
     expect(wrapper.text()).not.toContain('Fleet MAVLink quality')
     expect(wrapper.text()).toContain('本次访问尚未观察到状态变化')
 
