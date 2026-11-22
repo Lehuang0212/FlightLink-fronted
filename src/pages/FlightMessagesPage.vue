@@ -10,8 +10,9 @@ const channels = computed(() => channelPolling.data.value ?? [])
 const selectedChannelId = ref('')
 const hasChannels = computed(() => channels.value.length > 0)
 const messagesEnabled = computed(() => selectedChannelId.value.length > 0)
+const messageWindow = {}
 const messagesPolling = usePolling(
-  () => getFlightMessages(selectedChannelId.value, 100),
+  () => getFlightMessages(selectedChannelId.value, 100, messageWindow),
   1_000,
   messagesEnabled,
   selectedChannelId,

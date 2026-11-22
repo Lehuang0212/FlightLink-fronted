@@ -11,6 +11,7 @@ import StatusBadge from '@/components/StatusBadge.vue'
 import TerminalPanel from '@/components/TerminalPanel.vue'
 import RouterLogPanel from '@/components/RouterLogPanel.vue'
 import { usePolling } from '@/composables/usePolling'
+import { groundState, uavState } from '@/observations'
 import { formatDecimal as formatNumber } from '@/format'
 
 const route = useRoute()
@@ -18,9 +19,12 @@ const router = useRouter()
 const channelId = computed(() => String(route.params.id ?? ''))
 const enabled = computed(() => channelId.value.length > 0)
 const channelPolling = usePolling(() => getChannel(channelId.value), 1_000, enabled, channelId)
-const logsPolling = usePolling(() => getChannelLogs(channelId.value, 500), 2_000, enabled, channelId)
-const messagesPolling = usePolling(() => getFlightMessages(channelId.value, 100), 1_000, enabled, channelId)
-const packetsPolling = usePolling(() => getPacketSummaries(channelId.value, 100), 1_000, enabled, channelId)
+const logWindow = {}
+const logsPolling = usePolling(() => getChannelLogs(channelId.value, 500, logWindow), 2_000, enabled, channelId)
+const messageWindow = {}
+const packetWindow = {}
+const messagesPolling = usePolling(() => getFlightMessages(channelId.value, 100, messageWindow), 1_000, enabled, channelId)
+const packetsPolling = usePolling(() => getPacketSummaries(channelId.value, 100, packetWindow), 1_000, enabled, channelId)
 
 const channel = computed(() => channelPolling.data.value)
 const logLines = computed(() => logsPolling.data.value ?? [])
@@ -48,7 +52,7 @@ const monitorStateText = computed(() => {
   if (channel.value.telemetry.monitor_state === 'unavailable') return '监测服务不可用'
   if (channel.value.telemetry.uav_online) return '飞控在线'
   return channel.value.telemetry.last_packet_at
-    ? '飞控最近断开'
+    ? '飞控心跳已超时'
     : '尚未收到飞控数据'
 })
 
@@ -112,7 +116,7 @@ async function saveChannel(input: ChannelWrite): Promise<void> {
     const updated = await updateChannel(targetId, input)
     if (channelId.value !== targetId) return
     channelPolling.data.value = updated
-    const configurationApplied =
+    const configurationApplied = updated.operation_result ? updated.operation_result !== 'not_applied' :
       updated.uav_udp_port === input.uav_udp_port &&
       updated.ground_station_port === input.ground_station_port &&
       updated.ground_station_protocol === input.ground_station_protocol &&
@@ -125,7 +129,7 @@ async function saveChannel(input: ChannelWrite): Promise<void> {
     }
 
     formOpen.value = false
-    const subsystemFailed =
+    const subsystemFailed = updated.operation_result === 'degraded' ||
       updated.security_group.state === 'error' ||
       updated.security_group.state === 'cleanup_pending' ||
       (updated.enabled &&
@@ -246,6 +250,7 @@ watch(channelId, (nextId, previousId) => {
         <button
           class="detail-action detail-action--primary"
           type="button"
+          :disabled="channel.runtime_intent === 'deleting'"
           @click="openEdit"
         >
           修改配置
@@ -253,7 +258,7 @@ watch(channelId, (nextId, previousId) => {
         <button
           class="detail-action"
           type="button"
-          :disabled="!channel.enabled || pendingAction !== null"
+          :disabled="!channel.enabled || (channel.runtime_intent && channel.runtime_intent !== 'applied') || pendingAction !== null"
           @click="restartConfirmOpen = true"
         >
           重启 Router
@@ -297,7 +302,7 @@ watch(channelId, (nextId, previousId) => {
       class="detail-load-error"
       role="alert"
     >
-      <span>{{ channelError }}</span>
+      <span>{{ channelError }} <template v-if="channelPolling.lastSuccess.value">当前为历史快照，上次刷新：{{ channelPolling.lastSuccess.value.toLocaleTimeString() }}</template></span>
       <button
         class="detail-action"
         type="button"
@@ -326,11 +331,11 @@ watch(channelId, (nextId, previousId) => {
           <div class="telemetry-panel__badges">
             <StatusBadge
               label="飞控"
-              :state="channel.telemetry.uav_online ? 'online' : 'offline'"
+              :state="uavState(channel)"
             />
             <StatusBadge
               label="地面站"
-              :state="channel.telemetry.ground_station_connected ? 'connected' : 'disconnected'"
+              :state="groundState(channel)"
             />
           </div>
         </div>
@@ -348,7 +353,7 @@ watch(channelId, (nextId, previousId) => {
             UDP 监测服务当前不可用。
           </span>
           <span v-if="!channel.telemetry.uav_online && channel.telemetry.last_packet_at">
-            飞控最近断开。
+            以下为历史观测，最近数据：{{ formatClock(channel.telemetry.last_packet_at) }}。
           </span>
           <span v-else-if="channel.telemetry.last_packet_at">
             最近收到飞控数据：{{ formatAge(channel.telemetry.last_packet_age_seconds) }}
@@ -451,7 +456,7 @@ watch(channelId, (nextId, previousId) => {
         />
       </div>
       <TerminalPanel
-        title="实时 MAVLink 报文摘要"
+        title="实时 MAVLink 报文摘要 · 最近样本"
         :lines="packetLines"
         :loading="packetsPolling.initialLoading.value"
         :error="packetsPolling.error.value ? toChineseError(packetsPolling.error.value, '暂时无法读取报文摘要。') : null"

@@ -76,7 +76,7 @@ describe('port-group detail', () => {
     expect(getChannelLogs).toHaveBeenCalledTimes(1)
     await vi.advanceTimersByTimeAsync(1_000)
     expect(getChannelLogs).toHaveBeenCalledTimes(2)
-    expect(getChannelLogs).toHaveBeenLastCalledWith(previewChannelId, 500)
+    expect(getChannelLogs).toHaveBeenLastCalledWith(previewChannelId, 500, expect.any(Object))
     wrapper.unmount()
   })
   beforeEach(() => {
@@ -105,7 +105,9 @@ describe('port-group detail', () => {
     const { wrapper } = await mountDetail(channel)
 
     expect(wrapper.text()).toContain('监测服务不可用')
-    expect(wrapper.text()).toContain('飞控最近断开')
+    expect(wrapper.text()).toContain('飞控 未知')
+    expect(wrapper.text()).toContain('地面站 未知')
+    expect(wrapper.text()).toContain('历史观测')
     expect(wrapper.text()).toContain('链路质量未知')
     expect(wrapper.text()).toContain('Router 服务')
     expect(wrapper.text()).toContain('抓包服务')

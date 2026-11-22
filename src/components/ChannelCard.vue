@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import type { ChannelPublic } from '@/api/types'
 import LinkQuality from '@/components/LinkQuality.vue'
 import StatusBadge from '@/components/StatusBadge.vue'
+import { groundState, uavState } from '@/observations'
 import { formatDecimal } from '@/format'
 
 const props = defineProps<{ channel: ChannelPublic }>()
@@ -40,7 +41,7 @@ function lastPacketText(age: number | null): string {
           <span>{{ channel.ground_station_port }}</span>
         </h3>
         <p class="channel-card__packet-age">
-          {{ lastPacketText(telemetry.last_packet_age_seconds) }}
+          {{ lastPacketText(telemetry.last_packet_age_seconds) }}{{ !telemetry.uav_online && telemetry.last_packet_at ? '（以下为历史观测）' : '' }}
         </p>
       </div>
       <span
@@ -52,11 +53,11 @@ function lastPacketText(age: number | null): string {
     <div class="channel-card__status-row">
       <StatusBadge
         label="飞控"
-        :state="telemetry.uav_online ? 'online' : 'offline'"
+        :state="uavState(channel)"
       />
       <StatusBadge
         label="地面站"
-        :state="telemetry.ground_station_connected ? 'connected' : 'disconnected'"
+        :state="groundState(channel)"
       />
       <span class="channel-card__sysid">SYSID <strong>{{ display(telemetry.system_id) }}</strong></span>
     </div>
@@ -100,7 +101,7 @@ function lastPacketText(age: number | null): string {
       <StatusBadge :state="channel.capture_runtime.state" />
       <span class="channel-card__footer-spacer" />
       <span>安全组</span>
-      <StatusBadge :state="channel.security_group.state" />
+      <StatusBadge :state="channel.security_group.state === 'disabled' ? 'unmanaged' : channel.security_group.state" />
     </div>
   </RouterLink>
 </template>

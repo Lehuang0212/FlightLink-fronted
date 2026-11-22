@@ -76,6 +76,17 @@ describe('channel API adapters', () => {
     await expect(listCaptures('c1')).resolves.toEqual([{ file_name: 'closed.pcap' }])
   })
 
+  it('merges cursor deltas and discards old samples after a reset', async () => {
+    const window = {}
+    for (const [cursor, reset, messages] of [['a:1', true, ['A']], ['a:2', false, ['B']], ['b:1', true, ['C']]]) {
+      vi.mocked(fetch).mockResolvedValueOnce(Response.json({ cursor, reset, messages }))
+    }
+    expect(await getFlightMessages('c1', 2, window)).toEqual(['A'])
+    expect(await getFlightMessages('c1', 2, window)).toEqual(['A', 'B'])
+    expect(fetch).toHaveBeenLastCalledWith('/api/v1/channels/c1/messages?limit=2&after=a%3A1', expect.anything())
+    expect(await getFlightMessages('c1', 2, window)).toEqual(['C'])
+  })
+
   it('encodes capture names in the authenticated download request', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       new Response(new Blob(['pcap']), { status: 200 }),

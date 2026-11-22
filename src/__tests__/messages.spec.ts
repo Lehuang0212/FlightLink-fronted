@@ -52,7 +52,7 @@ describe('flight messages page', () => {
     const wrapper = mount(FlightMessagesPage)
     await flushPromises()
 
-    expect(getFlightMessages).toHaveBeenCalledWith(firstChannel.id, 100)
+    expect(getFlightMessages).toHaveBeenCalledWith(firstChannel.id, 100, expect.any(Object))
     expect(wrapper.text()).toContain('Battery failsafe')
     expect(wrapper.text()).toContain('EKF3 IMU0 is using GPS')
 
@@ -63,7 +63,7 @@ describe('flight messages page', () => {
 
     await wrapper.get('select[aria-label="端口组"]').setValue(secondChannel.id)
     await flushPromises()
-    expect(getFlightMessages).toHaveBeenLastCalledWith(secondChannel.id, 100)
+    expect(getFlightMessages).toHaveBeenLastCalledWith(secondChannel.id, 100, expect.any(Object))
     wrapper.unmount()
   })
 

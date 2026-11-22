@@ -25,7 +25,7 @@ const services = computed(() => [
   {
     key: 'security-group',
     label: '阿里云安全组',
-    state: props.channel.security_group.state,
+    state: props.channel.security_group.state === 'disabled' ? 'unmanaged' : props.channel.security_group.state,
     detail: null,
     problem: props.channel.security_group.error
       ? '安全组规则同步失败，请检查 RAM 权限和安全组配置。'
@@ -55,8 +55,8 @@ function formatDate(value: string | null): string {
         </h2>
       </div>
       <StatusBadge
-        label="端口组"
-        :state="channel.enabled ? 'active' : 'disabled'"
+        label="配置"
+        :state="channel.runtime_intent === 'deleting' ? 'deleting' : channel.runtime_intent === 'blocked' ? 'blocked' : channel.enabled ? 'enabled' : 'disabled'"
       />
     </div>
 

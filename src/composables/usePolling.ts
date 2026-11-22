@@ -16,6 +16,7 @@ export function usePolling<T>(
   key?: MaybeRefOrGetter<unknown>,
 ) {
   const data = shallowRef<T>()
+  const lastSuccess = shallowRef<Date>()
   const error = shallowRef<unknown>(null)
   const loading = shallowRef(false)
   const fetching = shallowRef(false)
@@ -69,6 +70,7 @@ export function usePolling<T>(
       .then(loader)
       .then((result) => {
         if (!mounted || generation !== requestGeneration) return
+        lastSuccess.value = new Date()
         data.value = shareUnchanged(data.value, result)
         error.value = null
       })
@@ -100,6 +102,7 @@ export function usePolling<T>(
     const keyChanged = !Object.is(currentKey, previousKey)
     if (isEnabled !== wasEnabled || keyChanged) requestGeneration += 1
     if (keyChanged) {
+      lastSuccess.value = undefined
       data.value = undefined
       error.value = null
     }
@@ -128,5 +131,5 @@ export function usePolling<T>(
     document.removeEventListener('visibilitychange', onVisibilityChange)
   })
 
-  return { data, error, loading, initialLoading, fetching, refresh }
+  return { data, error, lastSuccess, loading, initialLoading, fetching, refresh }
 }

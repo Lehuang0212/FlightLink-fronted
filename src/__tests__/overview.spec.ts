@@ -119,7 +119,7 @@ describe('overview and port-group cards', () => {
 
     await vi.advanceTimersByTimeAsync(1_000)
     await flushPromises()
-    expect(wrapper.text()).toContain('飞控已断开 · 5760 / 14552')
+    expect(wrapper.text()).toContain('飞控心跳超时 · 5760 / 14552')
     expect(wrapper.text()).not.toContain('本次访问尚未观察到状态变化')
 
     wrapper.unmount()

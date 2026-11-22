@@ -7,15 +7,27 @@ import type {
   PacketSummaryPublic,
 } from './types'
 
-interface LogsResponse {
+export interface HistoryWindow<T> { id?: string; cursor?: string | null; items?: T[] }
+interface CursorPage { cursor?: string | null; reset?: boolean }
+function after<T>(window: HistoryWindow<T> | undefined, id: string) {
+  return window?.id === id && window.cursor ? `&after=${encodeURIComponent(window.cursor)}` : ''
+}
+function merge<T>(window: HistoryWindow<T> | undefined, page: CursorPage, id: string, items: T[], limit: number) {
+  if (!window) return items
+  const result = window.id === id && page.reset === false ? [...(window.items ?? []), ...items].slice(-limit) : items
+  Object.assign(window, { id, cursor: page.cursor, items: result })
+  return result
+}
+
+interface LogsResponse extends CursorPage {
   lines: string[]
 }
 
-interface FlightMessagesResponse {
+interface FlightMessagesResponse extends CursorPage {
   messages: FlightMessagePublic[]
 }
 
-interface PacketSummariesResponse {
+interface PacketSummariesResponse extends CursorPage {
   packets: PacketSummaryPublic[]
 }
 
@@ -64,31 +76,34 @@ export function restartChannel(id: string): Promise<ChannelPublic> {
 export async function getChannelLogs(
   id: string,
   limit = 100,
+  window?: HistoryWindow<string>,
 ): Promise<string[]> {
   const result = await apiRequest<LogsResponse>(
-    `/channels/${encodeURIComponent(id)}/logs?limit=${limit}`,
+    `/channels/${encodeURIComponent(id)}/logs?limit=${limit}${after(window, id)}`,
   )
-  return result.lines
+  return merge(window, result, id, result.lines, limit)
 }
 
 export async function getFlightMessages(
   id: string,
   limit = 100,
+  window?: HistoryWindow<FlightMessagePublic>,
 ): Promise<FlightMessagePublic[]> {
   const result = await apiRequest<FlightMessagesResponse>(
-    `/channels/${encodeURIComponent(id)}/messages?limit=${limit}`,
+    `/channels/${encodeURIComponent(id)}/messages?limit=${limit}${after(window, id)}`,
   )
-  return result.messages
+  return merge(window, result, id, result.messages, limit)
 }
 
 export async function getPacketSummaries(
   id: string,
   limit = 100,
+  window?: HistoryWindow<PacketSummaryPublic>,
 ): Promise<PacketSummaryPublic[]> {
   const result = await apiRequest<PacketSummariesResponse>(
-    `/channels/${encodeURIComponent(id)}/packets?limit=${limit}`,
+    `/channels/${encodeURIComponent(id)}/packets?limit=${limit}${after(window, id)}`,
   )
-  return result.packets
+  return merge(window, result, id, result.packets, limit)
 }
 
 export async function listCaptures(id: string): Promise<CaptureFilePublic[]> {

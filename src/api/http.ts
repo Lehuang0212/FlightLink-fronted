@@ -57,13 +57,15 @@ async function readError(response: Response): Promise<ApiError> {
 async function request(path: string, init: RequestInit = {}): Promise<Response> {
   const requestEpoch = currentSessionEpoch()
   const headers = new Headers(init.headers)
-  headers.set('Accept', 'application/json')
+  if (!headers.has('Accept')) headers.set('Accept', 'application/json')
   if (init.body !== undefined && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json')
   }
 
   const response = await fetch(apiUrl(path), {
     ...init,
+    // A timed-out write may still complete on the server; never retry it implicitly.
+    signal: init.signal ?? ((init.method && init.method !== 'GET') || headers.get('Accept') === 'application/octet-stream' ? undefined : AbortSignal.timeout(30_000)),
     headers,
     credentials: 'include',
   })

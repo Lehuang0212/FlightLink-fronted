@@ -71,6 +71,7 @@ export interface ChannelTelemetryPublic {
   last_packet_age_seconds: number | null
   uav_rx_bytes_per_second: number
   gcs_tx_bytes_per_second: number
+  ground_station_observable?: boolean
   ground_station_connected: boolean
   ground_station_peer: string | null
   ground_station_last_packet_at: string | null
@@ -85,6 +86,8 @@ export interface ChannelWrite {
 }
 
 export interface ChannelPublic extends ChannelWrite {
+  runtime_intent?: 'applied' | 'blocked' | 'deleting'
+  operation_result?: 'applied' | 'degraded' | 'not_applied' | null
   id: string
   monitor_udp_port: number
   config_file_name: string

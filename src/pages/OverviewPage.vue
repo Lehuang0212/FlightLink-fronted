@@ -13,6 +13,7 @@ interface ActivityEntry {
 }
 
 interface ChannelSnapshot {
+  gcsKnown: boolean
   uavOnline: boolean
   groundStationConnected: boolean
   ports: string
@@ -41,7 +42,9 @@ watch(
     const changes: ActivityEntry[] = []
 
     for (const channel of currentChannels) {
+      if (channel.telemetry.monitor_state !== 'listening') continue
       const current: ChannelSnapshot = {
+        gcsKnown: channel.telemetry.ground_station_observable !== false,
         uavOnline: channel.telemetry.uav_online,
         groundStationConnected: channel.telemetry.ground_station_connected,
         ports: `${channel.uav_udp_port} / ${channel.ground_station_port}`,
@@ -53,14 +56,14 @@ watch(
         if (previous.uavOnline !== current.uavOnline) {
           changes.push({
             id: `${channel.id}-uav-${Date.now()}-${changes.length}`,
-            message: `飞控${current.uavOnline ? '已连接' : '已断开'} · ${current.ports}`,
+            message: `飞控${current.uavOnline ? '心跳已恢复' : '心跳超时'} · ${current.ports}`,
             time: new Date().toLocaleTimeString(),
           })
         }
-        if (previous.groundStationConnected !== current.groundStationConnected) {
+        if (previous.gcsKnown && current.gcsKnown && previous.groundStationConnected !== current.groundStationConnected) {
           changes.push({
             id: `${channel.id}-gcs-${Date.now()}-${changes.length}`,
-            message: `地面站${current.groundStationConnected ? '已连接' : '已断开'} · ${current.ports}`,
+            message: `${channel.ground_station_protocol.toUpperCase()} 地面站${current.groundStationConnected ? '活动已观测到' : '近期未观测到活动'} · ${current.ports}`,
             time: new Date().toLocaleTimeString(),
           })
         }
@@ -107,7 +110,7 @@ async function refresh(): Promise<void> {
       class="page-alert"
       role="status"
     >
-      {{ hasLoaded ? '更新失败，当前显示最近一次成功获取的数据。' : '无法读取端口组，请检查后端服务后重试。' }}
+      {{ hasLoaded ? `更新失败，当前显示最近一次成功获取的数据。${polling.lastSuccess.value?.toLocaleTimeString() ?? ''}` : '无法读取端口组，请检查后端服务后重试。' }}
       <button
         type="button"
         @click="refresh"
@@ -129,13 +132,13 @@ async function refresh(): Promise<void> {
       <SummaryCard
         label="无人机在线"
         :value="`${onlineUavCount} / ${channels.length}`"
-        detail="正在回传飞行数据"
+        :detail="`近期检测到心跳；${channels.filter(c => c.telemetry.monitor_state !== 'listening').length} 组监测不可用`"
         marker="02"
       />
       <SummaryCard
         label="地面站连接"
         :value="`${connectedGroundStationCount} / ${channels.length}`"
-        detail="已连接的 QGC 客户端"
+        detail="检测到 TCP 会话或近期 UDP 活动"
         marker="03"
       />
     </div>

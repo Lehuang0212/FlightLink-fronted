@@ -14,8 +14,9 @@ const selectedChannel = computed(() =>
   channels.value.find((channel) => channel.id === selectedChannelId.value) ?? null,
 )
 const capturesEnabled = computed(() => selectedChannelId.value.length > 0)
+const packetWindow = {}
 const packetPolling = usePolling(
-  () => getPacketSummaries(selectedChannelId.value, 100),
+  () => getPacketSummaries(selectedChannelId.value, 100, packetWindow),
   1_000,
   capturesEnabled,
   selectedChannelId,

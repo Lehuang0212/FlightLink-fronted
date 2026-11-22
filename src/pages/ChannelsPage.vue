@@ -45,8 +45,11 @@ async function createPortGroup(input: ChannelWrite): Promise<void> {
       operationNeedsAttention.value = true
     } else if (created.security_group.state === 'pending') {
       operationMessage.value = '端口组已创建，阿里云安全组规则正在同步。'
+    } else if (created.operation_result === 'degraded') {
+      operationMessage.value = '配置已保存，但服务未全部就绪，请查看详情。'
+      operationNeedsAttention.value = true
     } else {
-      operationMessage.value = '端口组已创建。'
+      operationMessage.value = created.security_group.state === 'disabled' ? '端口组已创建；未启用云规则托管。' : '端口组已创建。'
     }
     await polling.refresh()
   } catch (error: unknown) {
@@ -122,7 +125,7 @@ async function createPortGroup(input: ChannelWrite): Promise<void> {
       class="page-alert"
       role="status"
     >
-      {{ hasLoaded ? '更新失败，当前显示最近一次成功获取的数据。' : '无法读取端口组，请检查后端服务后重试。' }}
+      {{ hasLoaded ? `更新失败，当前显示最近一次成功获取的数据。${polling.lastSuccess.value?.toLocaleTimeString() ?? ''}` : '无法读取端口组，请检查后端服务后重试。' }}
       <button
         type="button"
         @click="refresh"

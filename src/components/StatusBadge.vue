@@ -8,17 +8,17 @@ const props = defineProps<{
 
 const tone = computed(() => {
   if (
-    ['available', 'active', 'ok', 'synced', 'online', 'connected'].includes(
+    ['available', 'active', 'ok', 'synced', 'online', 'connected', 'tcpSession', 'udpActivity', 'enabled'].includes(
       props.state,
     )
   ) return 'good'
-  if (['checking', 'pending', 'starting', 'stopping'].includes(props.state)) {
+  if (['checking', 'pending', 'starting', 'stopping', 'deleting'].includes(props.state)) {
     return 'pending'
   }
   if (
     [
       'degraded', 'cleanup_pending', 'unknown', 'inactive', 'offline',
-      'disconnected',
+      'disconnected', 'unmanaged', 'waiting', 'expired', 'quiet', 'noSession', 'disabled',
     ].includes(props.state)
   ) {
     return 'muted'
@@ -28,6 +28,9 @@ const tone = computed(() => {
 
 const statusText = computed(() => {
   const labels: Record<string, string> = {
+    enabled: '已启用', unmanaged: '未托管', blocked: '待重新应用', deleting: '待完成删除',
+    waiting: '尚未观测到', expired: '心跳超时', tcpSession: 'TCP 会话已建立',
+    noSession: '未观察到 TCP 会话', udpActivity: '近期有 UDP 活动', quiet: '近期无 UDP 活动',
     available: '在线',
     active: '运行中',
     ok: '正常',
