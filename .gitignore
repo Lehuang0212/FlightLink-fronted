@@ -1,7 +1,21 @@
-node_modules/
+# Python / Virtualenv
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build / Packaging artifacts
+build/
 dist/
-.npm-cache/
-*.tsbuildinfo
-.env
-.env.*
-!.env.example
+*.spec.bak
+
+# Local runtime state / temp files
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.part
+.DS_Store
+Thumbs.db

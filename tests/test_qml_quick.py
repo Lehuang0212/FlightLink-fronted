@@ -1,0 +1,72 @@
+"""Pytest integration for Qt Quick Test (tst_*.qml) and QGuiApplication startup."""
+
+from __future__ import annotations
+
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).resolve().parents[1]
+QML_RUNNER = ROOT_DIR / "tests" / "qml" / "run_qml_tests.py"
+
+
+def test_qml_keyboard_shortcuts_via_qt_quick_test() -> None:
+    env = os.environ.copy()
+    env.setdefault("QT_QUICK_CONTROLS_STYLE", "Basic")
+    env.setdefault("QT_QPA_PLATFORM", "offscreen")
+    proc = subprocess.run(
+        [sys.executable, str(QML_RUNNER), "-v2"],
+        cwd=str(ROOT_DIR),
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    output = proc.stdout + "\n" + proc.stderr
+    assert proc.returncode == 0, f"Qt Quick Test failed:\n{output}"
+    assert "PASS   : FlightLinkQmlTests::KeySmokeView::test_ctrl_k_focuses_search_and_emits_shortcut()" in output
+    assert "PASS   : FlightLinkQmlTests::KeySmokeView::test_escape_clears_search_and_emits_shortcut()" in output
+
+
+def test_minimal_qguiapplication_window_launch_and_clean_exit() -> None:
+    env = os.environ.copy()
+    env.setdefault("QT_QUICK_CONTROLS_STYLE", "Basic")
+    env.setdefault("QT_QPA_PLATFORM", "offscreen")
+    proc = subprocess.run(
+        [sys.executable, "-m", "flightlink_desktop", "--smoke-exit-ms", "200"],
+        cwd=str(ROOT_DIR),
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    output = proc.stdout + "\n" + proc.stderr
+    assert proc.returncode == 0, f"App startup failed:\n{output}"
+
+
+def test_app_excludes_forbidden_qt_modules() -> None:
+    env = os.environ.copy()
+    env.setdefault("QT_QUICK_CONTROLS_STYLE", "Basic")
+    env.setdefault("QT_QPA_PLATFORM", "offscreen")
+    code = (
+        "import sys; "
+        "from flightlink_desktop import app; "
+        "rc = app.main(['--smoke-exit-ms', '100']); "
+        "forbidden = [m for m in sys.modules if 'QtWidgets' in m or 'QtWebEngine' in m or 'PyQt6' in m]; "
+        "assert rc == 0, f'rc={rc}'; "
+        "assert not forbidden, f'Forbidden modules loaded: {forbidden}'"
+    )
+    proc = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=str(ROOT_DIR),
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    output = proc.stdout + "\n" + proc.stderr
+    assert proc.returncode == 0, f"Forbidden module check failed:\n{output}"

@@ -1,1 +1,0 @@
-declare const __FLIGHTLINK_PREVIEW_MODE__: boolean
