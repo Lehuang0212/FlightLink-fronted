@@ -17,7 +17,9 @@ Item {
         property string currentDisplayName: "运维管理员"
         property string currentRoleLabel: "系统管理员"
         property string serverUrl: "http://127.0.0.1:8000"
+        property string ecsInstanceId: "ecs_demo_01"
         function logout() {}
+        function copyToClipboard(txt) {}
     }
 
     QtObject {
@@ -182,6 +184,7 @@ Item {
             compare(logTabs.visible, false)
             compare(routerPane.visible, true)
             compare(mavPane.visible, true)
+            compare(mavPane.title, "MAVProxy 会话日志")
             verify(mavPane.x > routerPane.x)
             verify(mavPane.x + mavPane.width <= page.width)
         }
@@ -193,7 +196,15 @@ Item {
             waitForRendering(shell)
 
             let sidebar = findChild(shell, "appSidebar")
+            let statusInst = findChild(shell, "statusBarInstanceId")
+            let overviewInst = findChild(shell, "overviewInstanceId")
             verify(!!sidebar, "Object exists")
+            verify(!!statusInst, "Status bar instance ID exists")
+            verify(!!overviewInst, "Overview instance ID exists")
+            compare(statusInst.visible, true)
+            compare(statusInst.text, "ecs_demo_01")
+            compare(overviewInst.visible, true)
+            verify(overviewInst.text.indexOf("ecs_demo_01") >= 0)
             compare(sidebar.width, 192)
 
             shell.width = 1440

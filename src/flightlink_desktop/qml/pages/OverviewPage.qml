@@ -90,6 +90,23 @@ Flickable {
                         color: Theme.text
                     }
 
+                    AppButton {
+                        objectName: "overviewInstanceId"
+                        visible: Boolean(root.sessionVm && root.sessionVm.ecsInstanceId.length > 0)
+                        compact: true
+                        variant: "subtle"
+                        text: root.sessionVm ? qsTr("实例 %1").arg(root.sessionVm.ecsInstanceId) : ""
+                        ToolTip.visible: hovered
+                        ToolTip.text: qsTr("点击复制 ECS 实例 ID")
+                        onClicked: {
+                            if (root.sessionVm && root.sessionVm.ecsInstanceId) {
+                                root.sessionVm.copyToClipboard(root.sessionVm.ecsInstanceId)
+                                if (root.workspaceVm)
+                                    root.workspaceVm.showToast(qsTr("已复制实例 ID：%1").arg(root.sessionVm.ecsInstanceId), "info")
+                            }
+                        }
+                    }
+
                     Item { Layout.fillWidth: true }
 
                     StatusTag {

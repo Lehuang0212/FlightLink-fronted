@@ -7,6 +7,7 @@ import "../components"
 FocusScope {
     id: root
     objectName: "loginPage"
+    clip: true
 
     required property var sessionVm
 
@@ -14,6 +15,13 @@ FocusScope {
     property bool rememberSession: true
 
     signal loginSubmitted(string serverUrl, string username)
+
+    function resetCredentials(clearUsername) {
+        passwordInput.text = ""
+        root.showPassword = false
+        if (clearUsername)
+            usernameInput.text = ""
+    }
 
     function submitLogin() {
         if (!sessionVm || sessionVm.loggingIn)
@@ -34,11 +42,28 @@ FocusScope {
         usernameInput.forceActiveFocus()
     }
 
+    onVisibleChanged: {
+        if (visible) {
+            root.resetCredentials(false)
+            usernameInput.forceActiveFocus()
+        }
+    }
+
     Connections {
         target: root.sessionVm
+        ignoreUnknownSignals: true
         function onServerUrlChanged() {
             if (root.sessionVm && serverInput.text !== root.sessionVm.serverUrl && !serverInput.activeFocus)
                 serverInput.text = root.sessionVm.serverUrl
+            if (root.sessionVm && !root.sessionVm.authenticated)
+                root.resetCredentials(false)
+        }
+        function onAuthenticatedChanged() {
+            // Clear sensitive inputs immediately on login success AND on logout/expiry/server switch
+            root.resetCredentials(true)
+        }
+        function onSessionEnded() {
+            root.resetCredentials(true)
         }
     }
 
@@ -57,10 +82,22 @@ FocusScope {
         color: Theme.bg
     }
 
-    ColumnLayout {
-        anchors.centerIn: parent
-        spacing: 10
-        width: Math.min(Theme.loginCardWidth, Math.max(320, root.width - 24))
+    Flickable {
+        id: loginFlick
+        objectName: "loginScrollView"
+        anchors.fill: parent
+        clip: true
+        contentWidth: width
+        contentHeight: Math.max(height, loginWrapper.implicitHeight + 24)
+        boundsBehavior: Flickable.StopAtBounds
+        ScrollBar.vertical: ScrollBar { policy: ScrollBar.AsNeeded }
+
+        ColumnLayout {
+            id: loginWrapper
+            width: Math.min(Theme.loginCardWidth, Math.max(320, loginFlick.width - 24))
+            x: Math.round((loginFlick.width - width) / 2)
+            y: Math.max(12, Math.round((loginFlick.height - implicitHeight) / 2))
+            spacing: 10
 
         Rectangle {
             objectName: "loginCard"
@@ -387,15 +424,16 @@ FocusScope {
             }
         }
 
-        Label {
-            Layout.fillWidth: true
-            Layout.minimumWidth: 0
-            elide: Text.ElideRight
-            horizontalAlignment: Text.AlignHCenter
-            font.family: Theme.fontSans
-            font.pixelSize: Theme.fontXs
-            color: Theme.text3
-            text: qsTr("连接真实 FlightLink ECS 1.0 · 不保存明文密码")
+            Label {
+                Layout.fillWidth: true
+                Layout.minimumWidth: 0
+                elide: Text.ElideRight
+                horizontalAlignment: Text.AlignHCenter
+                font.family: Theme.fontSans
+                font.pixelSize: Theme.fontXs
+                color: Theme.text3
+                text: qsTr("连接真实 FlightLink ECS 1.0 · 不保存明文密码")
+            }
         }
     }
 }

@@ -92,32 +92,22 @@ FocusScope {
                 spacing: 8
                 Item { Layout.fillWidth: true }
 
-                Button {
+                AppButton {
                     objectName: "cancelDeleteButton"
+                    variant: "secondary"
+                    pill: true
                     enabled: !root.opsVm || !root.opsVm.deleteSubmitting
                     text: qsTr("取消")
                     onClicked: if (root.opsVm) root.opsVm.closeDeleteDialog()
                 }
 
-                Button {
+                AppButton {
                     id: confirmDelBtn
                     objectName: "confirmDeleteButton"
+                    variant: "dangerFilled"
                     enabled: !root.opsVm || !root.opsVm.deleteSubmitting
                     text: root.opsVm && root.opsVm.deleteSubmitting ? qsTr("提交中…") : qsTr("确认删除")
                     onClicked: if (root.opsVm) root.opsVm.confirmDeleteGroup()
-                    contentItem: Text {
-                        text: confirmDelBtn.text
-                        font.family: Theme.fontSans
-                        font.pixelSize: Theme.fontSm
-                        font.weight: Font.Medium
-                        color: Theme.textOnPrimary
-                        leftPadding: 14; rightPadding: 14
-                        verticalAlignment: Text.AlignVCenter
-                    }
-                    background: Rectangle {
-                        radius: Theme.radiusPill
-                        color: confirmDelBtn.enabled ? Theme.bad : Theme.outline
-                    }
                 }
             }
         }

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import ctypes
 import os
 import sys
 from pathlib import Path
@@ -116,6 +117,30 @@ class DesktopRuntime:
         self.api_client.close()
 
 
+def detect_system_reduced_motion() -> bool:
+    """Query OS reduced-motion accessibility setting (Windows SPI_GETCLIENTAREAANIMATION)."""
+    override = os.environ.get("FLIGHTLINK_REDUCED_MOTION", "").strip().lower()
+    if override in ("1", "true", "yes", "on"):
+        return True
+    if override in ("0", "false", "no", "off"):
+        return False
+    if sys.platform == "win32":
+        try:
+            SPI_GETCLIENTAREAANIMATION = 0x1042
+            animations_enabled = ctypes.c_int(1)
+            ok = ctypes.windll.user32.SystemParametersInfoW(
+                SPI_GETCLIENTAREAANIMATION,
+                0,
+                ctypes.byref(animations_enabled),
+                0,
+            )
+            if ok:
+                return animations_enabled.value == 0
+        except Exception:
+            return False
+    return False
+
+
 def build_engine(app: QGuiApplication, runtime: DesktopRuntime) -> QQmlApplicationEngine:
     engine = QQmlApplicationEngine()
     engine.addImportPath(str(QML_DIR))
@@ -124,6 +149,7 @@ def build_engine(app: QGuiApplication, runtime: DesktopRuntime) -> QQmlApplicati
             "sessionVm": runtime.session_vm,
             "workspaceVm": runtime.workspace_vm,
             "opsVm": runtime.ops_vm,
+            "systemReducedMotion": detect_system_reduced_motion(),
         }
     )
 

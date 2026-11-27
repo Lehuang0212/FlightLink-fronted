@@ -25,10 +25,12 @@ Item {
             Layout.minimumWidth: 0
             spacing: 10
 
-            Button {
+            AppButton {
                 objectName: "historyDetailBackButton"
                 Layout.preferredWidth: 32
                 Layout.preferredHeight: 32
+                compact: true
+                variant: "secondary"
                 text: "←"
                 Accessible.name: qsTr("返回历史列表")
                 onClicked: if (root.workspaceVm) root.workspaceVm.navigate("history")
@@ -116,8 +118,10 @@ Item {
                         Layout.minimumWidth: 0
                         spacing: 8
 
-                        Button {
+                        AppButton {
                             objectName: "toggleSliceBtn_" + sliceCard.sessionId
+                            compact: true
+                            variant: "ghost"
                             text: sliceCard.expanded ? "▼" : "▶"
                             Layout.preferredWidth: 28
                             Layout.preferredHeight: 28
@@ -214,13 +218,19 @@ Item {
 
                         RowLayout {
                             spacing: 6
-                            Button {
+                            AppButton {
                                 objectName: "sliceSourceRouterBtn_" + sliceCard.sessionId
+                                compact: true
+                                pill: true
+                                active: sliceCard.activeSource === "router"
                                 text: qsTr("Router 日志")
                                 onClicked: if (root.workspaceVm) root.workspaceVm.selectHistorySliceSource(sliceCard.sessionId, "router")
                             }
-                            Button {
+                            AppButton {
                                 objectName: "sliceSourceMavproxyBtn_" + sliceCard.sessionId
+                                compact: true
+                                pill: true
+                                active: sliceCard.activeSource === "mavproxy"
                                 text: qsTr("MAVProxy 日志")
                                 onClicked: if (root.workspaceVm) root.workspaceVm.selectHistorySliceSource(sliceCard.sessionId, "mavproxy")
                             }
@@ -231,8 +241,10 @@ Item {
                                 color: Theme.text3
                             }
                             Item { Layout.fillWidth: true }
-                            Button {
+                            AppButton {
                                 visible: sliceCard.entriesHasMore && !sliceCard.entriesLoading
+                                compact: true
+                                variant: "subtle"
                                 text: qsTr("加载更多")
                                 onClicked: if (root.workspaceVm) root.workspaceVm.loadMoreSliceEntries(sliceCard.sessionId)
                             }

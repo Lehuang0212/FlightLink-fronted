@@ -1,0 +1,7 @@
+{"test": "login-min", "width": 360, "height": 480, "cardTop": 18.0, "cardBottom": 478.0, "titleBar": 40}
+{"test": "db", "rows": [["ecs_03eacde19f2b2713", 5, "2026-11-27T16:34:36.482Z"]], "sessions": 0, "files": 0}
+{"test": "instance-label", "present": false, "route": "detail"}
+{"test": "controlled-singleflight", "injected": 2, "realResponses": [["/api/v1/archive/changes", 200, "req_01a21ddccd791aa2043c6d1c"], ["/api/v1/groups/grp_01a21dba3397d66c38551786", 200, "req_01a21ddccd78dfefe83d307b"], ["/api/v1/auth/refresh", 200, "req_01a21ddccda8405f358ddb69"], ["/api/v1/archive/changes", 200, "req_01a21ddccdcf027815a6b401"], ["/api/v1/groups/grp_01a21dba3397d66c38551786", 200, "req_01a21ddccde8b6df0ce96e35"]], "refreshes": 1}
+{"test": "switch-login-fields", "showsMarker": true, "showPassword": true, "userStillSet": true, "authEmpty": true, "activeGroup": "grp_01a21dba3397d66c38551786"}
+{"test": "late", "dropped": true, "newRoute": "overview", "newEpoch": 3}
+{"test": "log-controls", "before": ["QQuickListView", 3500.0, 0.0], "after": ["QQuickListView", 3500.0, 0.0], "trim": ["QQuickListView", 3500.0, 400.0], "rowsBeforeClear": 500, "unread": 40, "rowsAfter": 0, "preserved": true, "signals": {"reset": 0, "insert": 3, "remove": 2}, "methods": []}

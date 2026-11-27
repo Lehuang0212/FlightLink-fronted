@@ -11,20 +11,25 @@ ROOT_DIR = Path(__file__).resolve().parents[1]
 QML_RUNNER = ROOT_DIR / "tests" / "qml" / "run_qml_tests.py"
 
 
-def test_qml_keyboard_shortcuts_via_qt_quick_test() -> None:
+def test_qml_keyboard_shortcuts_via_qt_quick_test(tmp_path: Path) -> None:
     env = os.environ.copy()
     env.setdefault("QT_QUICK_CONTROLS_STYLE", "Basic")
     env.setdefault("QT_QPA_PLATFORM", "offscreen")
+    env.setdefault("PYTHONUTF8", "1")
+    out_file = tmp_path / "qml_quick_results.txt"
     proc = subprocess.run(
-        [sys.executable, str(QML_RUNNER), "-v2"],
+        [sys.executable, str(QML_RUNNER), "-v2", "-o", f"{out_file},txt"],
         cwd=str(ROOT_DIR),
         env=env,
         capture_output=True,
         text=True,
+        encoding="utf-8",
+        errors="replace",
         timeout=60,
         check=False,
     )
-    output = proc.stdout + "\n" + proc.stderr
+    file_out = out_file.read_text(encoding="utf-8", errors="replace") if out_file.exists() else ""
+    output = "\n".join(part for part in (file_out, proc.stdout, proc.stderr) if part)
     assert proc.returncode == 0, f"Qt Quick Test failed:\n{output}"
     assert "PASS   : FlightLinkQmlTests::KeySmokeView::test_ctrl_k_focuses_search_and_emits_shortcut()" in output
     assert "PASS   : FlightLinkQmlTests::KeySmokeView::test_escape_clears_search_and_emits_shortcut()" in output
@@ -32,6 +37,8 @@ def test_qml_keyboard_shortcuts_via_qt_quick_test() -> None:
     assert "PASS   : FlightLinkQmlTests::LoginPage::test_keyboard_login_submission_and_password_toggle()" in output
     assert "PASS   : FlightLinkQmlTests::LoginPage::test_escape_clears_login_error()" in output
     assert "PASS   : FlightLinkQmlTests::LoginPage::test_overflowing_disconnect_error_activates_marquee_scrolling()" in output
+    assert "PASS   : FlightLinkQmlTests::LoginPage::test_credentials_and_show_password_cleared_on_auth_and_logout()" in output
+    assert "PASS   : FlightLinkQmlTests::LoginPage::test_minimum_size_error_does_not_overlap_top_edge()" in output
     assert "PASS   : FlightLinkQmlTests::DetailAndShellResponsive::test_detail_1280_shows_services_12_cards_and_tabbed_logs()" in output
     assert "PASS   : FlightLinkQmlTests::DetailAndShellResponsive::test_detail_1440_and_1600_show_dual_pane_logs()" in output
     assert "PASS   : FlightLinkQmlTests::DetailAndShellResponsive::test_shell_sidebar_narrows_at_1280_and_shortcuts_navigate()" in output

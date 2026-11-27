@@ -1,0 +1,17 @@
+{
+  "deletedListMember": false,
+  "deletedDetail": true,
+  "empty": true,
+  "searchBefore": [
+    true,
+    "qa",
+    true,
+    1
+  ],
+  "searchAfter": [
+    true,
+    "",
+    false,
+    0
+  ]
+}

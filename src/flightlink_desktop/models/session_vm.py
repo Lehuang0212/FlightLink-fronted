@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Property, QObject, Qt, Signal, Slot
+from PySide6.QtGui import QGuiApplication
 
 from flightlink_desktop.api.auth import AuthCoordinator, AuthSnapshot
 from flightlink_desktop.api.client import FlightLinkApiClient, HealthResult
@@ -157,6 +158,14 @@ class SessionViewModel(QObject):
             self.loginStateChanged.emit()
 
     @Slot(str)
+    def copyToClipboard(self, text: str) -> None:
+        if not text:
+            return
+        cb = QGuiApplication.clipboard()
+        if cb is not None:
+            cb.setText(text)
+
+    @Slot(str)
     def setServerUrl(self, value: str) -> None:
         if value != self._server_url:
             self._server_url = value
@@ -199,10 +208,11 @@ class SessionViewModel(QObject):
                 self._health_rtt_ms = result.rtt_ms
                 self._ecs_instance_id = result.ecs_instance_id
                 self._server_version = result.version
+                inst = f" · {result.ecs_instance_id}" if result.ecs_instance_id else ""
                 if self._health_status == "ok":
-                    self._health_message = f"ECS 已连接，{result.rtt_ms} ms"
+                    self._health_message = f"ECS 已连接{inst} · {result.rtt_ms} ms"
                 else:
-                    self._health_message = f"ECS 状态降级（{result.status}），{result.rtt_ms} ms"
+                    self._health_message = f"ECS 状态降级（{result.status}）{inst} · {result.rtt_ms} ms"
             self.healthChanged.emit()
 
         self._runner.submit(_work, _done)
@@ -388,7 +398,8 @@ class SessionViewModel(QObject):
         self._server_version = health.version
         self._health_status = "ok" if health.status == "ok" and health.db_ok else "error"
         self._health_rtt_ms = health.rtt_ms
-        self._health_message = f"ECS 已连接，{health.rtt_ms} ms"
+        inst = f" · {health.ecs_instance_id}" if health.ecs_instance_id else ""
+        self._health_message = f"ECS 已连接{inst} · {health.rtt_ms} ms"
         self._authenticated = True
         self._current_username = snap.user.username
         self._current_display_name = snap.user.display_name

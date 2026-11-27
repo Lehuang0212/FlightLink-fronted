@@ -88,7 +88,7 @@ Item {
                 }
             }
 
-            ComboBox {
+            AppComboBox {
                 id: levelCombo
                 objectName: "liveLogsLevelCombo"
                 Layout.preferredWidth: 116

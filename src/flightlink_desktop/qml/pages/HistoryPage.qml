@@ -42,8 +42,9 @@ Item {
                 color: Theme.text3
             }
 
-            Button {
+            AppButton {
                 objectName: "refreshHistoryGroupsButton"
+                variant: "secondary"
                 text: qsTr("刷新")
                 onClicked: if (root.workspaceVm) root.workspaceVm.loadArchiveGroups()
             }
@@ -204,9 +205,11 @@ Item {
                                 color: Theme.text2
                             }
 
-                            Button {
+                            AppButton {
                                 objectName: "openHistoryGroupBtn_" + aRow.groupId
                                 Layout.preferredWidth: 88
+                                compact: true
+                                variant: "subtle"
                                 text: qsTr("查看历史")
                                 onClicked: if (root.workspaceVm) root.workspaceVm.openHistoryGroup(aRow.groupId, "")
                             }

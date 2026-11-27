@@ -187,7 +187,7 @@ FocusScope {
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 8
-                        ComboBox {
+                        AppComboBox {
                             id: gcsProtoCombo
                             objectName: "gcsProtocolCombo"
                             Layout.preferredWidth: 84
@@ -289,13 +289,17 @@ FocusScope {
                             font.pixelSize: Theme.fontSm
                             color: Theme.warn
                         }
-                        Button {
+                        AppButton {
                             objectName: "keepEditingButton"
+                            compact: true
+                            variant: "secondary"
                             text: qsTr("继续编辑")
                             onClicked: if (root.opsVm) root.opsVm.cancelDiscardConfirmation()
                         }
-                        Button {
+                        AppButton {
                             objectName: "discardDraftButton"
+                            compact: true
+                            variant: "danger"
                             text: qsTr("放弃更改")
                             onClicked: if (root.opsVm) root.opsVm.forceCloseDialog()
                         }
@@ -307,8 +311,10 @@ FocusScope {
                     Layout.fillWidth: true
                     spacing: 8
 
-                    Button {
+                    AppButton {
                         objectName: "dryRunButton"
+                        variant: "subtle"
+                        pill: true
                         visible: Boolean(root.opsVm && root.opsVm.dialogMode === "edit")
                         enabled: Boolean(root.opsVm && !root.opsVm.dryRunning && !root.opsVm.submitting)
                         text: root.opsVm && root.opsVm.dryRunning ? qsTr("预演中…") : qsTr("预演变更")
@@ -317,34 +323,24 @@ FocusScope {
 
                     Item { Layout.fillWidth: true }
 
-                    Button {
+                    AppButton {
                         objectName: "cancelDialogButton"
+                        variant: "secondary"
+                        pill: true
                         enabled: !root.opsVm || !root.opsVm.submitting
                         text: qsTr("取消")
                         onClicked: if (root.opsVm) root.opsVm.requestCloseDialog()
                     }
 
-                    Button {
+                    AppButton {
                         id: submitBtn
                         objectName: "submitDialogButton"
+                        variant: "primary"
                         enabled: !root.opsVm || !root.opsVm.submitting
                         text: root.opsVm && root.opsVm.submitting
                             ? qsTr("提交中…")
                             : (root.opsVm && root.opsVm.dialogMode === "edit" ? qsTr("提交变更") : qsTr("创建端口组"))
                         onClicked: if (root.opsVm) root.opsVm.submitDialog()
-                        contentItem: Text {
-                            text: submitBtn.text
-                            font.family: Theme.fontSans
-                            font.pixelSize: Theme.fontSm
-                            font.weight: Font.Medium
-                            color: Theme.textOnPrimary
-                            leftPadding: 14; rightPadding: 14
-                            verticalAlignment: Text.AlignVCenter
-                        }
-                        background: Rectangle {
-                            radius: Theme.radiusPill
-                            color: submitBtn.enabled ? Theme.primary : Theme.outline
-                        }
                     }
                 }
             }

@@ -9,6 +9,7 @@ Item {
 
     QtObject {
         id: fakeSessionVm
+        signal sessionEnded(int epoch, string reason)
         property string serverUrl: "http://127.0.0.1:8000"
         property string healthStatus: "idle"
         property string healthMessage: ""
@@ -185,6 +186,70 @@ Item {
             compare(healthLabel.scrollingActive, true)
             tryCompare(errorLabel, "isOverflowing", true)
             compare(errorLabel.scrollingActive, true)
+        }
+
+        function test_credentials_and_show_password_cleared_on_auth_and_logout() {
+            let page = createTemporaryObject(loginComponent, root)
+            verify(!!page, "Component exists")
+            waitForRendering(page)
+
+            let userField = findChild(page, "usernameInput")
+            let passField = findChild(page, "passwordInput")
+            let toggleBtn = findChild(page, "togglePasswordButton")
+            verify(!!userField && !!passField && !!toggleBtn)
+
+            // 1. Successful login clears password, username, and resets showPassword
+            userField.text = "ops_admin"
+            passField.text = "MarkerSecret#1"
+            mouseClick(toggleBtn)
+            tryCompare(passField, "echoMode", TextInput.Normal)
+            compare(page.showPassword, true)
+
+            fakeSessionVm.authenticated = true
+            tryCompare(passField, "text", "")
+            compare(userField.text, "")
+            compare(page.showPassword, false)
+            compare(passField.echoMode, TextInput.Password)
+
+            // 2. Returning to login on logout / sessionEnded keeps inputs clean & masked
+            fakeSessionVm.authenticated = false
+            userField.text = "ops_admin"
+            passField.text = "MarkerSecret#2"
+            mouseClick(toggleBtn)
+            compare(page.showPassword, true)
+
+            fakeSessionVm.sessionEnded(2, "USER_LOGOUT")
+            tryCompare(passField, "text", "")
+            compare(userField.text, "")
+            compare(page.showPassword, false)
+            compare(passField.echoMode, TextInput.Password)
+
+            // 3. Server switch also clears password and resets mask
+            passField.text = "MarkerSecret#3"
+            mouseClick(toggleBtn)
+            compare(page.showPassword, true)
+            fakeSessionVm.serverUrl = "http://127.0.0.1:18080"
+            tryCompare(passField, "text", "")
+            compare(page.showPassword, false)
+        }
+
+        function test_minimum_size_error_does_not_overlap_top_edge() {
+            // Simulate 360x480 minimum window minus 40px titlebar => 360x440 body
+            let page = createTemporaryObject(loginComponent, root, { width: 360, height: 440 })
+            verify(!!page, "Component exists")
+            waitForRendering(page)
+
+            fakeSessionVm.loginError = "请输入账号。"
+            let card = findChild(page, "loginCard")
+            let scrollView = findChild(page, "loginScrollView")
+            let errorBanner = findChild(page, "loginErrorBanner")
+            verify(!!card && !!scrollView && !!errorBanner)
+            tryCompare(errorBanner, "visible", true)
+
+            // Card top must stay inside page bounds (y >= 0), never overlapping top titlebar
+            let topLeft = card.mapToItem(page, 0, 0)
+            verify(topLeft.y >= 0, "Login card must not overflow upward into titlebar, got y=" + topLeft.y)
+            verify(scrollView.contentHeight >= card.height, "Scrollable area must accommodate full card")
         }
     }
 }

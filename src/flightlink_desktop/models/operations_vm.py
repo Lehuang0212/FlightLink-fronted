@@ -787,7 +787,9 @@ class OperationsViewModel(QObject):
             self._workspace.showToast(f"{act_lbl}失败：{op.error_message or op.error_code}", "bad")
 
         self.operationCompleted.emit(op.operation_id, op.action, op.status)
-        # Refresh current page state cleanly after terminal operation
+        # Respect live-update pause switch: freeze page reads while paused; resume triggers immediate refresh
+        if not self._workspace.liveUpdatesEnabled:
+            return
         if self._workspace.route == "overview":
             self._workspace.pollOverview()
         elif self._workspace.route == "groups":

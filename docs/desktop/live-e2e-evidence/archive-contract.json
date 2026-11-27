@@ -1,0 +1,74 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/health",
+    "query": {},
+    "headers": {},
+    "request": null,
+    "status": 200,
+    "request_id": "req_01a21ddf9c860bd303cbd3b3",
+    "response": {
+      "status": "ok",
+      "version": "1.0.0",
+      "ecs_instance_id": "ecs_03eacde19f2b2713",
+      "observed_at": "2026-11-27T16:38:43.595Z",
+      "db_ok": true
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/archive/groups",
+    "query": {
+      "include_deleted": "true"
+    },
+    "headers": {
+      "Authorization": "Bearer [redacted]"
+    },
+    "request": null,
+    "status": 200,
+    "request_id": "req_01a21ddfa2c5e3f3b4ee3f74",
+    "response": {
+      "ecs_instance_id": "ecs_03eacde19f2b2713",
+      "items": [
+        {
+          "group_id": "grp_01a21dba3397d66c38551786",
+          "name_snapshot": "一号机",
+          "dtu_protocol": "udp",
+          "dtu_port_snapshot": 5760,
+          "gcs_protocol_snapshot": "tcp",
+          "gcs_port_snapshot": 14552,
+          "deleted": false,
+          "deleted_at": null,
+          "active_session_count": 0,
+          "sealed_session_count": 0,
+          "latest_session": null
+        }
+      ],
+      "observed_at": "2026-11-27T16:38:45.201Z"
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/archive/groups/grp_01a21ddd71aee438126b18e4",
+    "query": {},
+    "headers": {
+      "Authorization": "Bearer [redacted]"
+    },
+    "request": null,
+    "status": 200,
+    "request_id": "req_01a21ddfa2f249cc4cbe7f65",
+    "response": {
+      "group_id": "grp_01a21ddd71aee438126b18e4",
+      "name_snapshot": "QA-1ef75364",
+      "dtu_protocol": "udp",
+      "dtu_port_snapshot": 31060,
+      "gcs_protocol_snapshot": "tcp",
+      "gcs_port_snapshot": 31061,
+      "deleted": true,
+      "deleted_at": "2026-11-27T16:36:34.325Z",
+      "active_session_count": 0,
+      "sealed_session_count": 0,
+      "latest_session": null
+    }
+  }
+]

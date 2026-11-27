@@ -355,3 +355,75 @@ def test_needs_verification_stops_auto_poll_and_allows_admin_retry(tmp_path: Pat
         ws.stop_polling()
         runner.shutdown()
         client.close()
+
+
+def test_paused_live_updates_freezes_detail_refresh_on_operation_terminal(tmp_path: Path) -> None:
+    os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+    app = QCoreApplication.instance() or QCoreApplication([])
+
+    detail_gets = 0
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        nonlocal detail_gets
+        base = _base_auth_responses(request.url.path)
+        if base is not None:
+            return base
+        if request.url.path == "/api/v1/groups/grp_1" and request.method == "GET":
+            detail_gets += 1
+            return httpx.Response(
+                200,
+                headers={"ETag": '"v1"'},
+                json={
+                    "group_id": "grp_1", "name": "一号机", "dtu_protocol": "udp", "dtu_port": 5760,
+                    "gcs_protocol": "tcp", "gcs_port": 14552, "config_version": 1,
+                    "desired_state": "running", "lifecycle_state": "running", "operation_generation": 1,
+                    "fc_state": "offline", "gcs_state": "disconnected",
+                    "router": {"state": "running", "verified_listening": True, "observed_at": "2026-11-27T08:00:00Z", "stale": False},
+                    "mavproxy": {"state": "waiting", "observed_at": "2026-11-27T08:00:00Z", "stale": False},
+                    "security_group": {"state": "synced", "owned_rule_count": 2, "observed_at": "2026-11-27T08:00:00Z", "stale": False},
+                    "observed_at": "2026-11-27T08:00:00Z", "stale": False,
+                },
+            )
+        if request.url.path == "/api/v1/groups/grp_1/actions/restart":
+            return httpx.Response(
+                202,
+                json={"operation": {"operation_id": "op_rst_1", "group_id": "grp_1", "action": "restart", "status": "succeeded", "generation": 2, "retryable": False, "steps": [], "created_at": "2026-11-27T08:00:00Z", "updated_at": "2026-11-27T08:00:01Z"}},
+            )
+        return httpx.Response(200, json={"items": [], "next_cursor": None})
+
+    store = CredentialStore(config_path=tmp_path / "cfg.json", secret_backend=_MemSecrets())
+    auth = AuthCoordinator(credential_store=store)
+    client = FlightLinkApiClient(auth, transport=httpx.MockTransport(handler))
+    runner = BackgroundTaskRunner()
+    ws = WorkspaceViewModel(client, auth, runner, overview_interval_ms=60000, detail_interval_ms=60000)
+    ops = OperationsViewModel(client, auth, runner, ws)
+
+    try:
+        client.login("http://127.0.0.1:8000", "ops", "Pass123!")
+        ep = auth.current_epoch()
+        ws.onSessionStarted(ep, "ecs-1", "http://127.0.0.1:8000")
+        ops.onSessionStarted(ep, "ecs-1", "http://127.0.0.1:8000")
+
+        ws.openGroupDetail("grp_1")
+        _pump(app, lambda: detail_gets >= 1)
+
+        # Pause live updates -> detail page reads MUST stay frozen even when an operation reaches terminal state
+        ws.toggleLiveUpdates()
+        assert ws.liveUpdatesEnabled is False
+        gets_before_op = detail_gets
+
+        ops.triggerGroupAction("grp_1", "restart")
+        _pump(app, lambda: ops.activeOperationId == "op_rst_1" and ops.activeStatus == "succeeded", timeout_s=4.0)
+        time.sleep(0.15)
+        app.processEvents()
+        assert detail_gets == gets_before_op
+
+        # Resuming live updates immediately refreshes the paused detail view
+        ws.toggleLiveUpdates()
+        assert ws.liveUpdatesEnabled is True
+        _pump(app, lambda: detail_gets > gets_before_op, timeout_s=4.0)
+    finally:
+        ops.stop_tracking()
+        ws.stop_polling()
+        runner.shutdown()
+        client.close()

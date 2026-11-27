@@ -232,20 +232,26 @@ Item {
                                 spacing: 6
                                 Item { Layout.fillWidth: true }
 
-                                Button {
+                                AppButton {
                                     objectName: "openDetailBtn_" + gRow.groupId
+                                    compact: true
+                                    variant: "subtle"
                                     text: qsTr("详情")
                                     onClicked: if (root.workspaceVm) root.workspaceVm.openGroupDetail(gRow.groupId)
                                 }
 
-                                Button {
+                                AppButton {
                                     visible: Boolean(root.sessionVm && root.sessionVm.isAdmin)
+                                    compact: true
+                                    variant: "secondary"
                                     text: qsTr("编辑")
                                     onClicked: root.editGroupRequested(gRow.groupId)
                                 }
 
-                                Button {
+                                AppButton {
                                     visible: Boolean(root.sessionVm && root.sessionVm.isAdmin)
+                                    compact: true
+                                    variant: "danger"
                                     text: qsTr("删除")
                                     onClicked: root.deleteGroupRequested(gRow.groupId, gRow.name)
                                 }

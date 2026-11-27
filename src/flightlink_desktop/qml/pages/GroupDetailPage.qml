@@ -42,10 +42,12 @@ Flickable {
             Layout.minimumWidth: 0
             spacing: 10
 
-            Button {
+            AppButton {
                 objectName: "detailBackButton"
                 Layout.preferredWidth: 32
                 Layout.preferredHeight: 32
+                compact: true
+                variant: "secondary"
                 text: "←"
                 Accessible.name: qsTr("返回端口组")
                 onClicked: if (root.workspaceVm) root.workspaceVm.navigate("groups")
@@ -79,8 +81,12 @@ Flickable {
                 visible: Boolean(root.sessionVm && root.sessionVm.isAdmin)
                 spacing: 8
 
-                Button {
+                AppButton {
                     objectName: "detailStartStopButton"
+                    variant: root.workspaceVm && root.workspaceVm.detailLifecycleState === "running"
+                        ? "secondary"
+                        : "primary"
+                    pill: false
                     text: root.workspaceVm && root.workspaceVm.detailLifecycleState === "running"
                         ? qsTr("停止 Router")
                         : qsTr("启动 Router")
@@ -92,27 +98,31 @@ Flickable {
                     }
                 }
 
-                Button {
+                AppButton {
                     objectName: "detailRestartButton"
+                    variant: "secondary"
                     enabled: Boolean(root.workspaceVm && root.workspaceVm.detailLifecycleState === "running")
                     text: qsTr("重启 Router")
                     onClicked: if (root.workspaceVm) root.groupActionRequested(root.workspaceVm.activeGroupId, "restart")
                 }
 
-                Button {
+                AppButton {
                     objectName: "detailSyncSgButton"
+                    variant: "secondary"
                     text: qsTr("同步安全组")
                     onClicked: if (root.workspaceVm) root.groupActionRequested(root.workspaceVm.activeGroupId, "sync-security-group")
                 }
 
-                Button {
+                AppButton {
                     objectName: "detailEditButton"
+                    variant: "secondary"
                     text: qsTr("编辑配置")
                     onClicked: if (root.workspaceVm) root.editGroupRequested(root.workspaceVm.activeGroupId)
                 }
 
-                Button {
+                AppButton {
                     objectName: "detailDeleteButton"
+                    variant: "danger"
                     text: qsTr("删除")
                     onClicked: if (root.workspaceVm) root.deleteGroupRequested(root.workspaceVm.activeGroupId, root.workspaceVm.detailName)
                 }
@@ -421,49 +431,68 @@ Flickable {
                     }
                 }
 
-                ColumnLayout {
-                    visible: root.commandsExpanded
+                Item {
+                    id: cmdContentClip
+                    objectName: "gcsCommandsContentContainer"
                     Layout.fillWidth: true
-                    spacing: 6
+                    Layout.preferredHeight: root.commandsExpanded ? cmdContentCol.implicitHeight : 0
+                    clip: true
+                    visible: height > 0 || root.commandsExpanded
 
-                    Repeater {
-                        model: root.workspaceVm ? root.workspaceVm.detailGcsCommands : []
-                        delegate: RowLayout {
-                            required property var modelData
-                            Layout.fillWidth: true
-                            spacing: 8
-                            Text {
-                                text: modelData.command
-                                font.family: Theme.fontMono
-                                font.pixelSize: Theme.fontSm
-                                font.weight: Font.Medium
-                                color: Theme.text
-                            }
-                            Text {
-                                Layout.fillWidth: true
-                                Layout.minimumWidth: 0
-                                elide: Text.ElideRight
-                                text: modelData.detail || modelData.sourceLabel
-                                font.family: Theme.fontSans
-                                font.pixelSize: Theme.fontSm
-                                color: Theme.text2
-                            }
-                            StatusTag { text: modelData.status; tone: modelData.tone }
-                            Text {
-                                text: modelData.observedAt
-                                font.family: Theme.fontMono
-                                font.pixelSize: Theme.fontXs
-                                color: Theme.text3
-                            }
+                    Behavior on Layout.preferredHeight {
+                        enabled: !Theme.reducedMotion
+                        NumberAnimation {
+                            duration: Theme.durationExpand
+                            easing.type: Easing.OutCubic
                         }
                     }
 
-                    Text {
-                        visible: Boolean(root.workspaceVm && root.workspaceVm.detailGcsCommands.length === 0)
-                        text: qsTr("暂未观测到地面站下发指令。")
-                        font.family: Theme.fontSans
-                        font.pixelSize: Theme.fontSm
-                        color: Theme.text3
+                    ColumnLayout {
+                        id: cmdContentCol
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        spacing: 6
+
+                        Repeater {
+                            model: root.workspaceVm ? root.workspaceVm.detailGcsCommands : []
+                            delegate: RowLayout {
+                                required property var modelData
+                                Layout.fillWidth: true
+                                spacing: 8
+                                Text {
+                                    text: modelData.command
+                                    font.family: Theme.fontMono
+                                    font.pixelSize: Theme.fontSm
+                                    font.weight: Font.Medium
+                                    color: Theme.text
+                                }
+                                Text {
+                                    Layout.fillWidth: true
+                                    Layout.minimumWidth: 0
+                                    elide: Text.ElideRight
+                                    text: modelData.detail || modelData.sourceLabel
+                                    font.family: Theme.fontSans
+                                    font.pixelSize: Theme.fontSm
+                                    color: Theme.text2
+                                }
+                                StatusTag { text: modelData.status; tone: modelData.tone }
+                                Text {
+                                    text: modelData.observedAt
+                                    font.family: Theme.fontMono
+                                    font.pixelSize: Theme.fontXs
+                                    color: Theme.text3
+                                }
+                            }
+                        }
+
+                        Text {
+                            visible: Boolean(root.workspaceVm && root.workspaceVm.detailGcsCommands.length === 0)
+                            text: qsTr("暂未观测到地面站下发指令。")
+                            font.family: Theme.fontSans
+                            font.pixelSize: Theme.fontSm
+                            color: Theme.text3
+                        }
                     }
                 }
             }
@@ -552,7 +581,7 @@ Flickable {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     Layout.minimumWidth: 0
-                    title: qsTr("MAVProxy 旁路会话日志")
+                    title: qsTr("MAVProxy 会话日志")
                     subtitle: qsTr("session")
                     logModel: root.workspaceVm ? root.workspaceVm.detailMavproxyLogsModel : null
                 }

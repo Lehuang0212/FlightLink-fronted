@@ -250,9 +250,23 @@ Item {
                                 color: Theme.text3
                             }
 
-                            Button {
+                            Text {
+                                objectName: "sidebarInstanceId"
+                                visible: Boolean(root.sessionVm && root.sessionVm.ecsInstanceId.length > 0)
+                                Layout.fillWidth: true
+                                Layout.minimumWidth: 0
+                                elide: Text.ElideRight
+                                text: root.sessionVm ? qsTr("实例：%1").arg(root.sessionVm.ecsInstanceId) : ""
+                                font.family: Theme.fontMono
+                                font.pixelSize: Theme.fontXs
+                                color: Theme.text2
+                            }
+
+                            AppButton {
                                 objectName: "sidebarLogoutButton"
                                 Layout.fillWidth: true
+                                compact: true
+                                variant: "danger"
                                 text: qsTr("退出登录 / 切换服务器")
                                 onClicked: {
                                     root.userMenuOpen = false
@@ -358,8 +372,10 @@ Item {
                                 color: Theme.bad
                             }
 
-                            Button {
+                            AppButton {
                                 objectName: "jumpFailedArchiveButton"
+                                compact: true
+                                variant: "dangerFilled"
                                 text: qsTr("重新下载日志")
                                 onClicked: {
                                     if (root.workspaceVm && root.workspaceVm.archiveFailedGroupId)
@@ -408,15 +424,19 @@ Item {
                                     color: Theme.text
                                 }
 
-                                Button {
+                                AppButton {
                                     objectName: "retryOperationButton"
+                                    compact: true
+                                    variant: "primary"
                                     visible: Boolean(root.opsVm && root.opsVm.canRetryActive && root.sessionVm && root.sessionVm.isAdmin)
                                     text: qsTr("重试核验")
                                     onClicked: if (root.opsVm) root.opsVm.retryActiveOperation()
                                 }
 
-                                Button {
+                                AppButton {
                                     objectName: "dismissOperationButton"
+                                    compact: true
+                                    variant: "secondary"
                                     visible: Boolean(root.opsVm && root.opsVm.activeIsTerminal)
                                     text: qsTr("关闭提示")
                                     onClicked: if (root.opsVm) root.opsVm.dismissActiveOperation()
@@ -550,6 +570,35 @@ Item {
                     font.family: Theme.fontSans
                     font.pixelSize: Theme.fontXs
                     color: Theme.text3
+                }
+
+                Button {
+                    id: instanceIdCopyBtn
+                    objectName: "statusBarInstanceId"
+                    visible: Boolean(root.sessionVm && root.sessionVm.ecsInstanceId.length > 0)
+                    Layout.preferredHeight: 20
+                    text: root.sessionVm ? root.sessionVm.ecsInstanceId : ""
+                    ToolTip.visible: hovered
+                    ToolTip.text: qsTr("点击复制 ECS 实例 ID")
+                    onClicked: {
+                        if (root.sessionVm && root.sessionVm.ecsInstanceId) {
+                            root.sessionVm.copyToClipboard(root.sessionVm.ecsInstanceId)
+                            if (root.workspaceVm)
+                                root.workspaceVm.showToast(qsTr("已复制实例 ID：%1").arg(root.sessionVm.ecsInstanceId), "info")
+                        }
+                    }
+                    HoverHandler { cursorShape: Qt.PointingHandCursor }
+                    contentItem: Text {
+                        text: instanceIdCopyBtn.text
+                        font.family: Theme.fontMono
+                        font.pixelSize: Theme.fontXs
+                        color: instanceIdCopyBtn.hovered ? Theme.primary : Theme.text2
+                        verticalAlignment: Text.AlignVCenter
+                    }
+                    background: Rectangle {
+                        radius: 4
+                        color: instanceIdCopyBtn.hovered ? Theme.surfaceTint : "#00000000"
+                    }
                 }
 
                 Text {

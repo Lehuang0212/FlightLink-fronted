@@ -48,3 +48,19 @@
 * **修复**：
   * `src/flightlink_desktop/qml/components/LinkWireCard.qml`：新增 `routerStatusText` 属性，运行中显示 `转发中`，非运行态优先显示对应 `router` 状态文案，默认兜底 `未启动`（不再使用 `已停机`）。
   * `src/flightlink_desktop/models/list_models.py`、`OverviewPage.qml`、`GroupDetailPage.qml`：连线图直接使用 `router.state === "running"` 与 `router.stateLabel`，保持与「服务状态卡片」完全一致。
+
+---
+
+## 三、实机 E2E 验收（`live-e2e-test-report.md`）后续修复记录
+
+对照 2026-11-28 实机全量验收报告，桌面端已完成全部 7 项修复，后端 1 项（QA-02）待后端修复：
+
+* **QA-01（P1 阻断，已修）**：`LoginPage.qml` 在登录成功、退出登录、会话过期及切换服务器时立即清空密码框、账号框并重置 `showPassword = false`，防止同进程返回登录页残留凭据或明文显隐状态。
+* **QA-02（P2 后端）**：`GET /api/v1/archive/groups?include_deleted=true` 省略已删空组（`FlightLink-backend/src/flightlink/archive/service.py:834-836`），与单组 `GET /archive/groups/{id}` 返回 `200 / deleted=true` 不一致；桌面端不编造兼容，交由后端按 OpenAPI 契约修复。
+* **QA-03（P2，已修）**：`Main.qml` 主体容器增加 `clip: true`，`LoginPage.qml` 改为带 `Flickable` 的居中滚动容器（`y >= 12`），在 `360×480` 最小尺寸显示错误横幅时绝不覆盖 40px 标题栏，底部说明完整可滚可见。
+* **QA-04（P2，已修）**：`session_vm.py` 在健康探测与登录状态文案中纳入 `ecs_instance_id`，并在 `AppShell.qml` 底栏、侧栏用户菜单和 `OverviewPage.qml` 头部展示且支持一键复制。
+* **QA-05（P2，已修）**：新增 `AppButton.qml` 与 `AppComboBox.qml`，全站替换裸 Qt Basic 按钮/下拉框，统一圆角、色阶、禁用态与焦点环；为详情页地面站指令折叠区补充受 `Theme.reducedMotion` 控制的短过渡，并在 `app.py` 接入 Windows 系统 `SPI_GETCLIENTAREAANIMATION` 减少动态偏好。
+* **QA-06（P2，已修）**：将 `GroupDetailPage.qml` 右侧日志标题由 `MAVProxy 旁路会话日志` 统一为 `MAVProxy 会话日志`，全仓已无「旁路」UI 残留。
+* **QA-07（P2，已修）**：`operations_vm.py` 的 `_on_operation_terminal()` 检查 `workspace.liveUpdatesEnabled`，在「暂停实时更新」期间不再额外发起页面 GET，待用户恢复实时更新时自动刷新。
+* **QA-08（P2，已修）**：`tests/test_qml_quick.py` 显式通过 `-o <tmp_file>,txt` 写入 UTF-8 结果文件并解析，消除 Windows 默认控制台下 `pytest -v` 捕获不到 QtTest 输出的问题。
+

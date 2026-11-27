@@ -1,0 +1,262 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/v1/operations",
+    "query": {
+      "limit": "100",
+      "group_id": "grp_01a21dda28df24b13b5d32a7"
+    },
+    "headers": {
+      "Authorization": "Bearer [redacted]"
+    },
+    "request": null,
+    "http_status": 200,
+    "request_id": "req_01a21de0328fa8e0b4763209",
+    "response": {
+      "items": [
+        {
+          "action": "delete",
+          "operation_id": "op_01a21dda2e77535477c275a2",
+          "group_id": "grp_01a21dda28df24b13b5d32a7",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "create",
+          "operation_id": "op_01a21dda28e04fac951f82ba",
+          "group_id": "grp_01a21dda28df24b13b5d32a7",
+          "status": "succeeded",
+          "error_code": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/operations",
+    "query": {
+      "limit": "100",
+      "group_id": "grp_01a21ddace6672a296da500e"
+    },
+    "headers": {
+      "Authorization": "Bearer [redacted]"
+    },
+    "request": null,
+    "http_status": 200,
+    "request_id": "req_01a21de032bb56a9db4566a6",
+    "response": {
+      "items": [
+        {
+          "action": "delete",
+          "operation_id": "op_01a21ddbf54a56e2e7bbd543",
+          "group_id": "grp_01a21ddace6672a296da500e",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "stop",
+          "operation_id": "op_01a21ddbe096dcc8cb0d8d17",
+          "group_id": "grp_01a21ddace6672a296da500e",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "restart",
+          "operation_id": "op_01a21ddb9cc63f3b0ede29d6",
+          "group_id": "grp_01a21ddace6672a296da500e",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "start",
+          "operation_id": "op_01a21ddb9565db9783a998ac",
+          "group_id": "grp_01a21ddace6672a296da500e",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "verify",
+          "operation_id": "op_01a21ddadd7350ec2c25d48b",
+          "group_id": "grp_01a21ddace6672a296da500e",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "sync_security_group",
+          "operation_id": "op_01a21ddad7962420d886a414",
+          "group_id": "grp_01a21ddace6672a296da500e",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "create",
+          "operation_id": "op_01a21ddace67ffd1bb0ac15c",
+          "group_id": "grp_01a21ddace6672a296da500e",
+          "status": "succeeded",
+          "error_code": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/operations",
+    "query": {
+      "limit": "100",
+      "group_id": "grp_01a21ddd71aee438126b18e4"
+    },
+    "headers": {
+      "Authorization": "Bearer [redacted]"
+    },
+    "request": null,
+    "http_status": 200,
+    "request_id": "req_01a21de033087f7d563e8d80",
+    "response": {
+      "items": [
+        {
+          "action": "delete",
+          "operation_id": "op_01a21ddda074876c32f96ca6",
+          "group_id": "grp_01a21ddd71aee438126b18e4",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "update",
+          "operation_id": "op_01a21ddd959077cc7b191386",
+          "group_id": "grp_01a21ddd71aee438126b18e4",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "update",
+          "operation_id": "op_01a21ddd8fe8e9cdd493d527",
+          "group_id": "grp_01a21ddd71aee438126b18e4",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "update",
+          "operation_id": "op_01a21ddd8395def9d5b1994d",
+          "group_id": "grp_01a21ddd71aee438126b18e4",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "create",
+          "operation_id": "op_01a21ddd71af3f93b762ea4e",
+          "group_id": "grp_01a21ddd71aee438126b18e4",
+          "status": "succeeded",
+          "error_code": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/operations",
+    "query": {
+      "limit": "100",
+      "group_id": "grp_01a21ddda83489fe084d902d"
+    },
+    "headers": {
+      "Authorization": "Bearer [redacted]"
+    },
+    "request": null,
+    "http_status": 200,
+    "request_id": "req_01a21de0333955922001dea3",
+    "response": {
+      "items": [
+        {
+          "action": "delete",
+          "operation_id": "op_01a21dde6e6d1ae967b55afd",
+          "group_id": "grp_01a21ddda83489fe084d902d",
+          "status": "succeeded",
+          "error_code": null
+        },
+        {
+          "action": "create",
+          "operation_id": "op_01a21ddda835426740763f90",
+          "group_id": "grp_01a21ddda83489fe084d902d",
+          "status": "succeeded",
+          "error_code": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/operations/op_01a21ddad7962420d886a414",
+    "query": {},
+    "headers": {
+      "Authorization": "Bearer [redacted]"
+    },
+    "request": null,
+    "http_status": 200,
+    "request_id": "req_01a21de0336357bf1e61f4b0",
+    "response": {
+      "operation_id": "op_01a21ddad7962420d886a414",
+      "group_id": "grp_01a21ddace6672a296da500e",
+      "action": "sync_security_group",
+      "status": "succeeded",
+      "error_code": null,
+      "steps": [
+        {
+          "step_name": "reconcile_security_group",
+          "status": "succeeded",
+          "started_at": "2026-11-27T16:33:31.243Z",
+          "finished_at": "2026-11-27T16:33:31.833Z",
+          "detail": null,
+          "error_code": null,
+          "error_message": null
+        },
+        {
+          "step_name": "verify_security_group",
+          "status": "succeeded",
+          "started_at": null,
+          "finished_at": "2026-11-27T16:33:31.840Z",
+          "detail": null,
+          "error_code": null,
+          "error_message": null
+        }
+      ]
+    }
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/operations/op_01a21ddadd7350ec2c25d48b",
+    "query": {},
+    "headers": {
+      "Authorization": "Bearer [redacted]"
+    },
+    "request": null,
+    "http_status": 200,
+    "request_id": "req_01a21de033e120da950cf9f6",
+    "response": {
+      "operation_id": "op_01a21ddadd7350ec2c25d48b",
+      "group_id": "grp_01a21ddace6672a296da500e",
+      "action": "verify",
+      "status": "succeeded",
+      "error_code": null,
+      "steps": [
+        {
+          "step_name": "inspect_actual_runtime",
+          "status": "succeeded",
+          "started_at": "2026-11-27T16:33:32.881Z",
+          "finished_at": "2026-11-27T16:33:32.938Z",
+          "detail": null,
+          "error_code": null,
+          "error_message": null
+        },
+        {
+          "step_name": "reconcile_state",
+          "status": "succeeded",
+          "started_at": null,
+          "finished_at": "2026-11-27T16:33:32.944Z",
+          "detail": null,
+          "error_code": null,
+          "error_message": null
+        }
+      ]
+    }
+  }
+]

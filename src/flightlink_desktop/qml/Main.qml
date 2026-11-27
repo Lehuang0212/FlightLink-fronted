@@ -12,6 +12,7 @@ ApplicationWindow {
     required property var sessionVm
     required property var workspaceVm
     property var opsVm: null
+    property bool systemReducedMotion: false
 
     // Compact WeChat-style portrait login window (384x548), expands to full workspace after login
     readonly property int loginDefaultWidth: 384
@@ -64,6 +65,7 @@ ApplicationWindow {
     onIsAuthedChanged: applyWindowMode(isAuthed)
 
     Component.onCompleted: {
+        Theme.reducedMotion = root.systemReducedMotion
         centerOnScreen(root.width, root.height)
     }
 
@@ -217,10 +219,11 @@ ApplicationWindow {
             }
         }
 
-        // Main body: LoginPage vs AppShell
+        // Main body: LoginPage vs AppShell (clip strictly protects titleBar from overflow)
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
+            clip: true
 
             LoginPage {
                 id: loginPage
