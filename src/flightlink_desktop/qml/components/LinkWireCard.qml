@@ -12,6 +12,7 @@ Item {
     property string gcsPeer: "—"
     property bool fcOnline: false
     property bool routerRunning: false
+    property string routerStatusText: ""
     property bool gcsConnected: false
     property bool liveActive: true
 
@@ -154,7 +155,7 @@ Item {
                 }
                 Text {
                     Layout.alignment: Qt.AlignHCenter
-                    text: root.routerRunning ? qsTr("转发中") : qsTr("已停机")
+                    text: root.routerRunning ? qsTr("转发中") : (root.routerStatusText || qsTr("未启动"))
                     font.family: Theme.fontSans
                     font.pixelSize: Theme.fontXs
                     color: Theme.text3

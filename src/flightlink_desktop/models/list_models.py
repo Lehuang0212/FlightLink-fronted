@@ -51,6 +51,7 @@ class GroupListModel(QAbstractListModel):
     ConfigVersionRole = Qt.ItemDataRole.UserRole + 27
     ActiveOperationIdRole = Qt.ItemDataRole.UserRole + 28
     DesiredStateRole = Qt.ItemDataRole.UserRole + 29
+    RouterStateRole = Qt.ItemDataRole.UserRole + 30
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -96,6 +97,7 @@ class GroupListModel(QAbstractListModel):
             self.ConfigVersionRole: b"configVersion",
             self.ActiveOperationIdRole: b"activeOperationId",
             self.DesiredStateRole: b"desiredState",
+            self.RouterStateRole: b"routerState",
         }
 
     def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
@@ -132,6 +134,7 @@ class GroupListModel(QAbstractListModel):
             self.ConfigVersionRole: "config_version",
             self.ActiveOperationIdRole: "active_operation_id",
             self.DesiredStateRole: "desired_state",
+            self.RouterStateRole: "router_state",
         }
         field = key_map.get(role)
         return row.get(field) if field else None
@@ -165,6 +168,7 @@ class GroupListModel(QAbstractListModel):
             "sysid_text": f"SYSID {sysid}" if sysid is not None else "SYSID —",
             "link_quality_text": f"{int(lq)}%" if lq is not None else DASH,
             "rtt_text": f"{int(rtt)} ms" if rtt is not None else DASH,
+            "router_state": str(router.get("state") or "stopped"),
             "router_label": r_label,
             "router_tone": r_tone,
             "router_stale": bool(router.get("stale", False)),

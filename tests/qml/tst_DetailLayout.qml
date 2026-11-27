@@ -58,7 +58,7 @@ Item {
         property string detailObservedAt: "12:00:00"
         property var detailServices: [
             { key: "router", title: "Router", state: "running", stateLabel: "运行中", tone: "ok", meta: "PID 4821", observedAt: "12:00:00", stale: false },
-            { key: "mavproxy", title: "MAVProxy 旁路", state: "connected", stateLabel: "已连接", tone: "ok", meta: "00:05:00", observedAt: "12:00:00", stale: false },
+            { key: "mavproxy", title: "MAVProxy 会话", state: "connected", stateLabel: "已连接", tone: "ok", meta: "00:05:00", observedAt: "12:00:00", stale: false },
             { key: "security_group", title: "安全组", state: "synced", stateLabel: "已同步", tone: "ok", meta: "2 条入方向规则", observedAt: "12:00:00", stale: true }
         ]
         property var detailTelemetryCards: [

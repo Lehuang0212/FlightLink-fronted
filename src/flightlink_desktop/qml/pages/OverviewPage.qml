@@ -203,6 +203,7 @@ Flickable {
                     required property string dtuPeer
                     required property string gcsPeer
                     required property string sysidText
+                    required property string routerState
                     required property string routerLabel
                     required property string routerTone
                     required property string mavproxyLabel
@@ -273,7 +274,8 @@ Flickable {
                             dtuPeer: groupCard.dtuPeer
                             gcsPeer: groupCard.gcsPeer
                             fcOnline: groupCard.fcState === "online"
-                            routerRunning: groupCard.lifecycleState === "running"
+                            routerRunning: groupCard.routerState === "running"
+                            routerStatusText: groupCard.routerLabel
                             gcsConnected: groupCard.gcsState === "connected"
                             liveActive: Boolean(root.workspaceVm && root.workspaceVm.liveUpdatesEnabled)
                         }

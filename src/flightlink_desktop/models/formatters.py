@@ -264,7 +264,7 @@ def format_service_cards(group: dict[str, Any]) -> list[dict[str, Any]]:
     m_obs = format_local_time(mav.get("observed_at"))
     if m_state == "connected":
         up = format_uptime(mav.get("uptime_seconds"))
-        peer = group.get("gcs_peer") or "旁路观测中"
+        peer = group.get("gcs_peer") or "会话观测中"
         m_meta = f"{up}，{peer}"
     elif mav.get("detail"):
         m_meta = str(mav["detail"])
@@ -293,7 +293,7 @@ def format_service_cards(group: dict[str, Any]) -> list[dict[str, Any]]:
         },
         {
             "key": "mavproxy",
-            "title": "MAVProxy 旁路",
+            "title": "MAVProxy 会话",
             "state": m_state,
             "stateLabel": m_label,
             "tone": m_tone,

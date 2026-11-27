@@ -105,6 +105,7 @@ def test_group_services_distinguish_stale_from_offline() -> None:
     # Stale running router is STILL labeled "运行中" with stale=True separately (NOT offline/stopped!)
     assert by_key["router"]["stateLabel"] == "运行中"
     assert by_key["router"]["stale"] is True
+    assert by_key["mavproxy"]["title"] == "MAVProxy 会话"
     assert by_key["mavproxy"]["stateLabel"] == "未连接"
     assert by_key["mavproxy"]["stale"] is False
     assert by_key["security_group"]["stateLabel"] == "已同步"

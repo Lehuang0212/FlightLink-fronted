@@ -25,6 +25,9 @@ Flickable {
 
     readonly property int marginSize: compact ? Theme.contentMarginCompact : Theme.contentMarginWide
     readonly property int gapSize: compact ? Theme.columnGapCompact : Theme.columnGapWide
+    readonly property var routerServiceItem: (root.workspaceVm && root.workspaceVm.detailServices && root.workspaceVm.detailServices.length > 0)
+        ? root.workspaceVm.detailServices[0]
+        : null
 
     ColumnLayout {
         id: detailCol
@@ -137,7 +140,10 @@ Flickable {
                 dtuPeer: root.workspaceVm ? root.workspaceVm.detailDtuPeer : "—"
                 gcsPeer: root.workspaceVm ? root.workspaceVm.detailGcsPeer : "—"
                 fcOnline: Boolean(root.workspaceVm && root.workspaceVm.detailFcState === "online")
-                routerRunning: Boolean(root.workspaceVm && root.workspaceVm.detailLifecycleState === "running")
+                routerRunning: root.routerServiceItem
+                    ? root.routerServiceItem.state === "running"
+                    : Boolean(root.workspaceVm && root.workspaceVm.detailLifecycleState === "running")
+                routerStatusText: root.routerServiceItem ? String(root.routerServiceItem.stateLabel || "") : ""
                 gcsConnected: Boolean(root.workspaceVm && root.workspaceVm.detailGcsState === "connected")
                 liveActive: Boolean(root.workspaceVm && root.workspaceVm.liveUpdatesEnabled)
             }
