@@ -8,7 +8,8 @@
 
 | 页面 | `1280×800`（逻辑） | `1440×900`（逻辑） | `1600×1000`（逻辑） |
 |---|---|---|---|
-| 登录页 | [login_1280x800.png](login_1280x800.png) | [login_1440x900.png](login_1440x900.png) | [login_1600x1000.png](login_1600x1000.png) |
+| 登录页（默认紧凑竖窗 `384×548`） | [login_compact_384x524.png](login_compact_384x524.png) | — | — |
+| 登录页（拉伸尺寸验证） | [login_1280x800.png](login_1280x800.png) | [login_1440x900.png](login_1440x900.png) | [login_1600x1000.png](login_1600x1000.png) |
 | 总览页 | [overview_1280x800.png](overview_1280x800.png) | [overview_1440x900.png](overview_1440x900.png) | [overview_1600x1000.png](overview_1600x1000.png) |
 | 端口组列表 | [groups_1280x800.png](groups_1280x800.png) | [groups_1440x900.png](groups_1440x900.png) | [groups_1600x1000.png](groups_1600x1000.png) |
 | 端口组详情 | [detail_1280x800.png](detail_1280x800.png) | [detail_1440x900.png](detail_1440x900.png) | [detail_1600x1000.png](detail_1600x1000.png) |

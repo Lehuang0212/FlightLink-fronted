@@ -254,7 +254,7 @@ def main() -> int:
 
         try:
             if args.dpi125:
-                _grab(window, app, 1280, 800, "state_login_1280_dpi125.png")
+                _grab(window, app, 384, 548, "state_login_1280_dpi125.png")
                 runtime.session_vm.login("http://127.0.0.1:8000", "ops_admin", "StrongPass!2026", False)
                 _pump(app, 300)
                 runtime.workspace_vm.openGroupDetail("grp_1")
@@ -262,16 +262,20 @@ def main() -> int:
                 _grab(window, app, 1280, 800, "state_detail_1280_dpi125.png")
                 return 0
 
-            # 1. Login at 3 sizes + login error state
+            # 1. Compact portrait login window (384x548) + disconnect marquee error state
             runtime.session_vm.probeHealth("http://127.0.0.1:8000")
             _pump(app, 200)
+            _grab(window, app, 384, 548, "login_compact_384x524.png")
             for w, h in ((1280, 800), (1440, 900), (1600, 1000)):
                 _grab(window, app, w, h, f"login_{w}x{h}.png")
 
-            state["fail_login"] = True
-            runtime.session_vm.login("http://127.0.0.1:8000", "ops_admin", "wrongpass", False)
+            runtime.session_vm._health_status = "error"
+            runtime.session_vm._health_message = "无法连接服务器（远端断开连接，请检查端口与 HTTP/HTTPS 协议是否匹配）：Server disconnected without sending a response."
+            runtime.session_vm._login_error = runtime.session_vm._health_message
+            runtime.session_vm.healthChanged.emit()
+            runtime.session_vm.loginStateChanged.emit()
             _pump(app, 250)
-            _grab(window, app, 1280, 800, "state_login_error_1280.png")
+            _grab(window, app, 384, 548, "state_login_error_1280.png")
 
             # 2. Authenticate as admin & capture core views across 1280/1440/1600
             state["fail_login"] = False

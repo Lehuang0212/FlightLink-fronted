@@ -158,5 +158,33 @@ Item {
             tryCompare(fakeSessionVm, "loginError", "")
             tryCompare(errorBanner, "visible", false)
         }
+
+        function test_overflowing_disconnect_error_activates_marquee_scrolling() {
+            let page = createTemporaryObject(loginComponent, root, { width: 384, height: 484 })
+            verify(!!page, "Component exists")
+            waitForRendering(page)
+
+            let card = findChild(page, "loginCard")
+            let healthLabel = findChild(page, "healthStatusLabel")
+            let errorLabel = findChild(page, "loginErrorLabel")
+            verify(!!card, "Object exists")
+            verify(!!healthLabel, "Object exists")
+            verify(!!errorLabel, "Object exists")
+            compare(card.width, 360)
+
+            fakeSessionVm.healthStatus = "ok"
+            fakeSessionVm.healthMessage = "ECS 已连接，14 ms"
+            tryCompare(healthLabel, "isOverflowing", false)
+            compare(healthLabel.scrollingActive, false)
+
+            let longDisconnect = "无法连接服务器（远端断开连接，请检查端口与 HTTP/HTTPS 协议是否匹配）：Server disconnected without sending a response."
+            fakeSessionVm.healthStatus = "error"
+            fakeSessionVm.healthMessage = longDisconnect
+            fakeSessionVm.loginError = longDisconnect
+            tryCompare(healthLabel, "isOverflowing", true)
+            compare(healthLabel.scrollingActive, true)
+            tryCompare(errorLabel, "isOverflowing", true)
+            compare(errorLabel.scrollingActive, true)
+        }
     }
 }

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls.Basic
 import QtQuick.Layouts
 import theme
+import "../components"
 
 FocusScope {
     id: root
@@ -58,13 +59,13 @@ FocusScope {
 
     ColumnLayout {
         anchors.centerIn: parent
-        spacing: 12
-        width: Theme.loginCardWidth
+        spacing: 10
+        width: Math.min(Theme.loginCardWidth, Math.max(320, root.width - 24))
 
         Rectangle {
             objectName: "loginCard"
             Layout.fillWidth: true
-            Layout.preferredHeight: cardColumn.implicitHeight + 56
+            Layout.preferredHeight: cardColumn.implicitHeight + 40
             radius: Theme.radiusPanel
             color: Theme.surface
             border.width: 1
@@ -75,8 +76,8 @@ FocusScope {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.top: parent.top
-                anchors.margins: 28
-                spacing: 14
+                anchors.margins: 20
+                spacing: 11
 
                 Label {
                     objectName: "loginTitle"
@@ -94,7 +95,7 @@ FocusScope {
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
-                    spacing: 6
+                    spacing: 5
 
                     Label {
                         text: qsTr("服务器地址")
@@ -134,7 +135,7 @@ FocusScope {
                         Button {
                             id: probeButton
                             objectName: "probeHealthButton"
-                            Layout.preferredWidth: 76
+                            Layout.preferredWidth: 72
                             Layout.preferredHeight: Theme.controlHeight
                             text: root.sessionVm && root.sessionVm.healthStatus === "checking"
                                 ? qsTr("检测中")
@@ -166,7 +167,7 @@ FocusScope {
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
-                    spacing: 6
+                    spacing: 5
 
                     Label {
                         text: qsTr("账号")
@@ -203,7 +204,7 @@ FocusScope {
                 ColumnLayout {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
-                    spacing: 6
+                    spacing: 5
 
                     Label {
                         text: qsTr("密码")
@@ -284,26 +285,26 @@ FocusScope {
                     font.pixelSize: Theme.fontSm
                 }
 
-                // Inline error message
+                // Inline error message with automatic horizontal marquee scrolling on overflow
                 Rectangle {
                     id: errorBanner
                     objectName: "loginErrorBanner"
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
                     visible: Boolean(root.sessionVm && root.sessionVm.loginError.length > 0)
-                    Layout.preferredHeight: visible ? errorLabel.implicitHeight + 16 : 0
+                    Layout.preferredHeight: visible ? 34 : 0
                     radius: Theme.radiusTag
                     color: Theme.badBg
 
-                    Label {
+                    MarqueeText {
                         id: errorLabel
                         objectName: "loginErrorLabel"
                         anchors.fill: parent
-                        anchors.margins: 8
-                        wrapMode: Text.Wrap
+                        anchors.leftMargin: 10
+                        anchors.rightMargin: 10
                         text: root.sessionVm ? root.sessionVm.loginError : ""
-                        font.family: Theme.fontSans
-                        font.pixelSize: Theme.fontSm
+                        fontFamily: Theme.fontSans
+                        pixelSize: Theme.fontSm
                         color: Theme.bad
                     }
                 }
@@ -314,7 +315,7 @@ FocusScope {
                     objectName: "loginSubmitButton"
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
-                    Layout.preferredHeight: 40
+                    Layout.preferredHeight: 38
                     enabled: !root.sessionVm || !root.sessionVm.loggingIn
                     activeFocusOnTab: true
                     KeyNavigation.tab: serverInput
@@ -347,7 +348,7 @@ FocusScope {
                     color: Theme.divider
                 }
 
-                // Health status footer
+                // Health status footer with automatic horizontal marquee scrolling on overflow
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.minimumWidth: 0
@@ -367,15 +368,15 @@ FocusScope {
                                     : Theme.bad
                     }
 
-                    Label {
+                    MarqueeText {
                         objectName: "healthStatusLabel"
                         Layout.fillWidth: true
                         Layout.minimumWidth: 0
                         Layout.preferredWidth: 0
-                        elide: Text.ElideRight
-                        font.family: Theme.fontSans
-                        font.pixelSize: Theme.fontSm
-                        color: Theme.text2
+                        Layout.preferredHeight: 20
+                        fontFamily: Theme.fontSans
+                        pixelSize: Theme.fontSm
+                        color: root.sessionVm && root.sessionVm.healthStatus === "error" ? Theme.bad : Theme.text2
                         text: {
                             if (!root.sessionVm || root.sessionVm.healthMessage.length === 0)
                                 return qsTr("登录前将自动检测 /api/v1/health 连通性")
@@ -388,9 +389,11 @@ FocusScope {
 
         Label {
             Layout.fillWidth: true
+            Layout.minimumWidth: 0
+            elide: Text.ElideRight
             horizontalAlignment: Text.AlignHCenter
             font.family: Theme.fontSans
-            font.pixelSize: Theme.fontSm
+            font.pixelSize: Theme.fontXs
             color: Theme.text3
             text: qsTr("连接真实 FlightLink ECS 1.0 · 不保存明文密码")
         }

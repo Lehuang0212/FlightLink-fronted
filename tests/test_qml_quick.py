@@ -31,6 +31,7 @@ def test_qml_keyboard_shortcuts_via_qt_quick_test() -> None:
     assert "PASS   : FlightLinkQmlTests::LoginPage::test_login_card_width_and_no_prefilled_credentials()" in output
     assert "PASS   : FlightLinkQmlTests::LoginPage::test_keyboard_login_submission_and_password_toggle()" in output
     assert "PASS   : FlightLinkQmlTests::LoginPage::test_escape_clears_login_error()" in output
+    assert "PASS   : FlightLinkQmlTests::LoginPage::test_overflowing_disconnect_error_activates_marquee_scrolling()" in output
     assert "PASS   : FlightLinkQmlTests::DetailAndShellResponsive::test_detail_1280_shows_services_12_cards_and_tabbed_logs()" in output
     assert "PASS   : FlightLinkQmlTests::DetailAndShellResponsive::test_detail_1440_and_1600_show_dual_pane_logs()" in output
     assert "PASS   : FlightLinkQmlTests::DetailAndShellResponsive::test_shell_sidebar_narrows_at_1280_and_shortcuts_navigate()" in output

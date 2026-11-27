@@ -345,16 +345,16 @@ Item {
                             anchors.rightMargin: 16
                             spacing: 10
 
-                            Text {
+                            MarqueeText {
                                 Layout.fillWidth: true
                                 Layout.minimumWidth: 0
-                                elide: Text.ElideRight
+                                Layout.preferredHeight: 20
                                 text: root.workspaceVm
                                     ? qsTr("自动归档失败（%1 个切片）：%2").arg(root.workspaceVm.archiveFailedCount).arg(root.workspaceVm.archiveFailedMessage || "请前往历史日志重新下载")
                                     : ""
-                                font.family: Theme.fontSans
-                                font.pixelSize: Theme.fontSm
-                                font.weight: Font.Medium
+                                fontFamily: Theme.fontSans
+                                pixelSize: Theme.fontSm
+                                fontWeight: Font.Medium
                                 color: Theme.bad
                             }
 
@@ -397,14 +397,14 @@ Item {
                                 Layout.fillWidth: true
                                 spacing: 10
 
-                                Text {
+                                MarqueeText {
                                     Layout.fillWidth: true
                                     Layout.minimumWidth: 0
-                                    elide: Text.ElideRight
+                                    Layout.preferredHeight: 20
                                     text: root.opsVm ? root.opsVm.activeSummaryText : ""
-                                    font.family: Theme.fontSans
-                                    font.pixelSize: Theme.fontSm
-                                    font.weight: Font.Medium
+                                    fontFamily: Theme.fontSans
+                                    pixelSize: Theme.fontSm
+                                    fontWeight: Font.Medium
                                     color: Theme.text
                                 }
 

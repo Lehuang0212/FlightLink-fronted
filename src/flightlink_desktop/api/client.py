@@ -106,6 +106,16 @@ class FlightLinkApiClient:
             user=UserProfile.from_dict(user_raw),
         )
 
+    @staticmethod
+    def _format_http_error(prefix: str, exc: httpx.HTTPError) -> str:
+        if isinstance(exc, httpx.RemoteProtocolError):
+            return f"{prefix}（远端断开连接，请检查端口与 HTTP/HTTPS 协议是否匹配）：{exc}"
+        if isinstance(exc, httpx.ConnectTimeout):
+            return f"{prefix}（连接超时，请检查地址、端口或防火墙）：{exc}"
+        if isinstance(exc, httpx.ConnectError):
+            return f"{prefix}（无法建立连接，请检查服务器是否启动及端口）：{exc}"
+        return f"{prefix}：{exc}"
+
     def probe_health(self, raw_server_url: str) -> HealthResult:
         """GET /api/v1/health — strictly read-only connectivity & RTT check."""
         server_url = normalize_server_url(raw_server_url)
@@ -114,7 +124,7 @@ class FlightLinkApiClient:
         try:
             resp = client.get("/api/v1/health")
         except httpx.HTTPError as exc:
-            raise NetworkError(f"无法连接服务器：{exc}") from exc
+            raise NetworkError(self._format_http_error("无法连接服务器", exc)) from exc
         rtt_ms = max(1, int(round((time.perf_counter() - t0) * 1000)))
         payload = self._parse_json_safe(resp)
         if resp.status_code != 200 or not isinstance(payload, dict):

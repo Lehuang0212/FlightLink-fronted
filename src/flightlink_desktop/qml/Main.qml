@@ -13,22 +13,65 @@ ApplicationWindow {
     required property var workspaceVm
     property var opsVm: null
 
-    width: 1280
-    height: 800
-    minimumWidth: 1024
-    minimumHeight: 640
+    // Compact WeChat-style portrait login window (384x548), expands to full workspace after login
+    readonly property int loginDefaultWidth: 384
+    readonly property int loginDefaultHeight: 548
+    property int workspaceSavedWidth: 1280
+    property int workspaceSavedHeight: 800
+    readonly property bool isAuthed: Boolean(root.sessionVm && root.sessionVm.authenticated)
+    readonly property bool isMaximized: root.visibility === Window.Maximized
+
+    width: isAuthed ? workspaceSavedWidth : loginDefaultWidth
+    height: isAuthed ? workspaceSavedHeight : loginDefaultHeight
+    minimumWidth: isAuthed ? 1024 : 360
+    minimumHeight: isAuthed ? 640 : 480
     visible: true
     title: qsTr("FlightLink Desktop 1.0")
     color: Theme.bg
     flags: Qt.Window | Qt.FramelessWindowHint
 
-    readonly property bool isMaximized: root.visibility === Window.Maximized
+    function centerOnScreen(targetW, targetH) {
+        let availW = Screen.desktopAvailableWidth > 0 ? Screen.desktopAvailableWidth : 1920
+        let availH = Screen.desktopAvailableHeight > 0 ? Screen.desktopAvailableHeight : 1080
+        root.x = Math.round(Screen.virtualX + Math.max(0, (availW - targetW) / 2))
+        root.y = Math.round(Screen.virtualY + Math.max(0, (availH - targetH) / 2))
+    }
+
+    function applyWindowMode(authed) {
+        if (authed) {
+            let w = Math.max(1024, root.workspaceSavedWidth)
+            let h = Math.max(640, root.workspaceSavedHeight)
+            root.minimumWidth = 1024
+            root.minimumHeight = 640
+            root.width = w
+            root.height = h
+            root.centerOnScreen(w, h)
+        } else {
+            if (!root.isMaximized && root.width >= 1024 && root.height >= 640) {
+                root.workspaceSavedWidth = root.width
+                root.workspaceSavedHeight = root.height
+            }
+            if (root.isMaximized)
+                root.showNormal()
+            root.minimumWidth = 360
+            root.minimumHeight = 480
+            root.width = root.loginDefaultWidth
+            root.height = root.loginDefaultHeight
+            root.centerOnScreen(root.loginDefaultWidth, root.loginDefaultHeight)
+        }
+    }
+
+    onIsAuthedChanged: applyWindowMode(isAuthed)
+
+    Component.onCompleted: {
+        centerOnScreen(root.width, root.height)
+    }
 
     // Global Ctrl+K shortcut focuses top search box when authenticated
     Shortcut {
         sequences: ["Ctrl+K"]
         context: Qt.WindowShortcut
-        enabled: Boolean(root.sessionVm && root.sessionVm.authenticated)
+        enabled: root.isAuthed
         onActivated: globalSearchInput.forceActiveFocus()
     }
 
@@ -50,6 +93,7 @@ ApplicationWindow {
             }
 
             TapHandler {
+                enabled: root.isAuthed
                 onDoubleTapped: root.isMaximized ? root.showNormal() : root.showMaximized()
             }
 
@@ -80,7 +124,7 @@ ApplicationWindow {
                 TextField {
                     id: globalSearchInput
                     objectName: "globalSearchInput"
-                    visible: Boolean(root.sessionVm && root.sessionVm.authenticated)
+                    visible: root.isAuthed
                     Layout.preferredWidth: Math.min(340, Math.max(200, root.width * 0.28))
                     Layout.preferredHeight: 30
                     placeholderText: qsTr("搜索端口组、端口或日志（Ctrl+K）")
@@ -102,12 +146,15 @@ ApplicationWindow {
                     }
                 }
 
-                Item { Layout.fillWidth: true }
+                Item {
+                    Layout.fillWidth: true
+                    visible: root.isAuthed
+                }
 
                 Button {
                     id: minBtn
                     objectName: "winMinimizeButton"
-                    Layout.preferredWidth: 36
+                    Layout.preferredWidth: 34
                     Layout.preferredHeight: 28
                     text: "—"
                     Accessible.name: qsTr("最小化")
@@ -128,7 +175,8 @@ ApplicationWindow {
                 Button {
                     id: maxBtn
                     objectName: "winMaximizeButton"
-                    Layout.preferredWidth: 36
+                    visible: root.isAuthed
+                    Layout.preferredWidth: 34
                     Layout.preferredHeight: 28
                     text: root.isMaximized ? "❐" : "□"
                     Accessible.name: root.isMaximized ? qsTr("还原窗口") : qsTr("最大化")
@@ -149,7 +197,7 @@ ApplicationWindow {
                 Button {
                     id: closeBtn
                     objectName: "winCloseButton"
-                    Layout.preferredWidth: 36
+                    Layout.preferredWidth: 34
                     Layout.preferredHeight: 28
                     text: "×"
                     Accessible.name: qsTr("关闭")
@@ -177,14 +225,14 @@ ApplicationWindow {
             LoginPage {
                 id: loginPage
                 anchors.fill: parent
-                visible: !root.sessionVm || !root.sessionVm.authenticated
+                visible: !root.isAuthed
                 sessionVm: root.sessionVm
             }
 
             AppShell {
                 id: appShell
                 anchors.fill: parent
-                visible: Boolean(root.sessionVm && root.sessionVm.authenticated)
+                visible: root.isAuthed
                 sessionVm: root.sessionVm
                 workspaceVm: root.workspaceVm
                 opsVm: root.opsVm
@@ -211,7 +259,7 @@ ApplicationWindow {
             Rectangle {
                 id: searchPopup
                 objectName: "globalSearchResultsPopup"
-                visible: Boolean(root.sessionVm && root.sessionVm.authenticated && root.workspaceVm && root.workspaceVm.globalSearchResults.length > 0)
+                visible: Boolean(root.isAuthed && root.workspaceVm && root.workspaceVm.globalSearchResults.length > 0)
                 anchors.horizontalCenter: parent.horizontalCenter
                 anchors.top: parent.top
                 anchors.topMargin: 4
@@ -269,5 +317,21 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    // Subtle 1px outer border when window is not maximized
+    Rectangle {
+        anchors.fill: parent
+        color: "#00000000"
+        border.width: root.isMaximized ? 0 : 1
+        border.color: Theme.divider
+        z: 190
+    }
+
+    // Native 8-direction border & corner resize handles for frameless Windows window
+    WindowResizeHandles {
+        anchors.fill: parent
+        targetWindow: root
+        z: 200
     }
 }
