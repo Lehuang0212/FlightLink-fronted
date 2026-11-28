@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QTimer, QUrl
-from PySide6.QtGui import QGuiApplication
+from PySide6.QtGui import QGuiApplication, QIcon, QWindow
 from PySide6.QtQml import QQmlApplicationEngine
 
 from flightlink_desktop.api.auth import AuthCoordinator
@@ -20,6 +20,7 @@ from flightlink_desktop.archive.worker import ArchiveSyncWorker
 from flightlink_desktop.models.operations_vm import OperationsViewModel
 from flightlink_desktop.models.session_vm import SessionViewModel
 from flightlink_desktop.models.workspace_vm import WorkspaceViewModel
+from flightlink_desktop.tray import TrayController, bring_window_to_foreground, resolve_app_icon_path
 from flightlink_desktop.workers.task_runner import BackgroundTaskRunner
 
 def _resolve_qml_dir() -> Path:
@@ -65,6 +66,7 @@ class DesktopRuntime:
         )
         self.archive_engine = ArchiveSyncEngine(self.api_client)
         self.archive_worker = ArchiveSyncWorker(self.archive_engine, poll_interval_seconds=15.0, parent=app)
+        self.tray_controller = TrayController(parent=app)
 
         self.auth._on_session_expired = self.session_vm.notify_expired_from_worker
         self.session_vm.sessionStarted.connect(self.workspace_vm.onSessionStarted)
@@ -109,6 +111,7 @@ class DesktopRuntime:
         self.workspace_vm.showToast(message, "info" if ok else "bad")
 
     def shutdown(self) -> None:
+        self.tray_controller.shutdown()
         self.archive_worker.shutdown(timeout_s=3.0)
         self.ops_vm.stop_tracking()
         self.workspace_vm.stop_polling()
@@ -149,6 +152,7 @@ def build_engine(app: QGuiApplication, runtime: DesktopRuntime) -> QQmlApplicati
             "sessionVm": runtime.session_vm,
             "workspaceVm": runtime.workspace_vm,
             "opsVm": runtime.ops_vm,
+            "trayVm": runtime.tray_controller,
             "systemReducedMotion": detect_system_reduced_motion(),
         }
     )
@@ -179,16 +183,42 @@ def main(argv: list[str] | None = None) -> int:
     app = QGuiApplication([sys.argv[0], *qt_args])
     app.setApplicationName("FlightLink Desktop")
     app.setOrganizationName("FlightLink")
+    app.setQuitOnLastWindowClosed(False)
+    icon_path = resolve_app_icon_path()
+    if icon_path is not None:
+        app.setWindowIcon(QIcon(str(icon_path)))
 
     runtime = DesktopRuntime(app)
     engine = build_engine(app, runtime)
     root = engine.rootObjects()[0]
 
+    def _restore_window() -> None:
+        if isinstance(root, QWindow):
+            if root.visibility() == QWindow.Visibility.Minimized:
+                root.showNormal()
+            else:
+                root.show()
+            root.raise_()
+            root.requestActivate()
+            try:
+                bring_window_to_foreground(int(root.winId()))
+            except Exception:
+                pass
+
+    def _quit_app() -> None:
+        root.setProperty("allowImmediateClose", True)
+        if isinstance(root, QWindow):
+            root.close()
+        app.quit()
+
+    runtime.tray_controller.restoreRequested.connect(_restore_window)
+    runtime.tray_controller.quitRequested.connect(_quit_app)
+
     if not args.skip_restore and args.smoke_exit_ms <= 0:
         QTimer.singleShot(0, runtime.session_vm.tryRestoreSession)
 
     if args.smoke_exit_ms > 0:
-        QTimer.singleShot(args.smoke_exit_ms, app.quit)
+        QTimer.singleShot(args.smoke_exit_ms, _quit_app)
 
     try:
         exit_code = app.exec()

@@ -43,6 +43,7 @@ def test_qml_keyboard_shortcuts_via_qt_quick_test(tmp_path: Path) -> None:
     assert "PASS   : FlightLinkQmlTests::DetailAndShellResponsive::test_detail_1440_and_1600_show_dual_pane_logs()" in output
     assert "PASS   : FlightLinkQmlTests::DetailAndShellResponsive::test_shell_sidebar_narrows_at_1280_and_shortcuts_navigate()" in output
     assert "PASS   : FlightLinkQmlTests::HistorySaveStates::test_retry_button_only_visible_for_failed_and_hidden_for_saved_and_source_gaps()" in output
+    assert "PASS   : FlightLinkQmlTests::CloseConfirmDialog::test_close_dialog_fits_compact_window_and_emits_actions()" in output
 
 
 def test_minimal_qguiapplication_window_launch_and_clean_exit(tmp_path: Path) -> None:
@@ -87,3 +88,51 @@ def test_app_excludes_forbidden_qt_modules(tmp_path: Path) -> None:
     )
     output = proc.stdout + "\n" + proc.stderr
     assert proc.returncode == 0, f"Forbidden module check failed:\n{output}"
+
+
+def test_close_button_opens_confirm_dialog_and_tray_lifecycle_without_qtwidgets(tmp_path: Path) -> None:
+    env = os.environ.copy()
+    env.setdefault("QT_QUICK_CONTROLS_STYLE", "Basic")
+    env.setdefault("QT_QPA_PLATFORM", "offscreen")
+    env["FLIGHTLINK_DATA_DIR"] = str(tmp_path / "appdata")
+    code = (
+        "import sys; "
+        "from PySide6.QtGui import QGuiApplication; "
+        "from PySide6.QtQuick import QQuickWindow; "
+        "from flightlink_desktop.app import DesktopRuntime, build_engine; "
+        "app = QGuiApplication(['test']); "
+        "app.setQuitOnLastWindowClosed(False); "
+        "rt = DesktopRuntime(app); "
+        "eng = build_engine(app, rt); "
+        "win = eng.rootObjects()[0]; "
+        "restored = []; quit_hits = []; "
+        "rt.tray_controller.restoreRequested.connect(lambda: restored.append(1)); "
+        "rt.tray_controller.quitRequested.connect(lambda: quit_hits.append(1)); "
+        "win.close(); app.processEvents(); "
+        "assert win.property('closeDialogOpen') is True, 'close() must open confirm dialog'; "
+        "assert win.isVisible() is True, 'window must stay visible until user chooses'; "
+        "win.hideToBackgroundTray(); app.processEvents(); "
+        "assert win.property('closeDialogOpen') is False; "
+        "assert win.isVisible() is False, 'hideToBackgroundTray must hide main window'; "
+        "assert rt.tray_controller.inTray is True; "
+        "rt.tray_controller.restoreFromTray(); app.processEvents(); "
+        "assert rt.tray_controller.inTray is False; "
+        "assert len(restored) == 1; "
+        "win.performFullQuit(); app.processEvents(); "
+        "assert win.property('allowImmediateClose') is True; "
+        "assert len(quit_hits) == 1; "
+        "forbidden = [m for m in sys.modules if 'QtWidgets' in m or 'QtWebEngine' in m or 'PyQt6' in m]; "
+        "assert not forbidden, f'Forbidden modules loaded: {forbidden}'; "
+        "rt.shutdown()"
+    )
+    proc = subprocess.run(
+        [sys.executable, "-c", code],
+        cwd=str(ROOT_DIR),
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=30,
+        check=False,
+    )
+    output = proc.stdout + "\n" + proc.stderr
+    assert proc.returncode == 0, f"Tray/close lifecycle check failed:\n{output}"

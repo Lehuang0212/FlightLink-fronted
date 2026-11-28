@@ -12,7 +12,10 @@ ApplicationWindow {
     required property var sessionVm
     required property var workspaceVm
     property var opsVm: null
+    property var trayVm: null
     property bool systemReducedMotion: false
+    property bool closeDialogOpen: false
+    property bool allowImmediateClose: false
 
     // Compact WeChat-style portrait login window (384x548), expands to full workspace after login
     readonly property int loginDefaultWidth: 384
@@ -60,6 +63,31 @@ ApplicationWindow {
             root.height = root.loginDefaultHeight
             root.centerOnScreen(root.loginDefaultWidth, root.loginDefaultHeight)
         }
+    }
+
+    function hideToBackgroundTray() {
+        root.closeDialogOpen = false
+        if (root.trayVm)
+            root.trayVm.hideToTray()
+        root.hide()
+    }
+
+    function performFullQuit() {
+        root.closeDialogOpen = false
+        root.allowImmediateClose = true
+        if (root.trayVm)
+            root.trayVm.requestQuit()
+        else
+            Qt.quit()
+    }
+
+    onClosing: function(close) {
+        if (root.allowImmediateClose) {
+            close.accepted = true
+            return
+        }
+        close.accepted = false
+        root.closeDialogOpen = true
     }
 
     onIsAuthedChanged: applyWindowMode(isAuthed)
@@ -320,6 +348,17 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    // Close confirmation modal: ask whether to minimize to taskbar tray or fully exit
+    CloseConfirmDialog {
+        anchors.fill: parent
+        z: 160
+        open: root.closeDialogOpen
+        authenticated: root.isAuthed
+        onCancelRequested: root.closeDialogOpen = false
+        onBackgroundRequested: root.hideToBackgroundTray()
+        onQuitRequested: root.performFullQuit()
     }
 
     // Subtle 1px outer border when window is not maximized

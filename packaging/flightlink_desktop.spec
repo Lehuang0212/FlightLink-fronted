@@ -12,12 +12,16 @@ import PySide6
 project_root = Path(SPECPATH).resolve().parent
 src_dir = project_root / "src"
 qml_src = src_dir / "flightlink_desktop" / "qml"
+assets_src = src_dir / "flightlink_desktop" / "assets"
+ico_path = assets_src / "flightlink.ico"
 pyside_dir = Path(PySide6.__file__).resolve().parent
 
 datas = [
     (str(qml_src), "flightlink_desktop/qml"),
     (str(Path(certifi.where())), "certifi"),
 ]
+if assets_src.exists():
+    datas.append((str(assets_src), "flightlink_desktop/assets"))
 
 # Include required Qt6 QML modules explicitly (no QtWebEngine / QtWidgets / Qt3D)
 qml_root = pyside_dir / "qml"
@@ -108,6 +112,7 @@ exe = EXE(
     strip=False,
     upx=False,
     console=False,
+    icon=str(ico_path) if ico_path.is_file() else None,
     disable_windowed_traceback=False,
 )
 
